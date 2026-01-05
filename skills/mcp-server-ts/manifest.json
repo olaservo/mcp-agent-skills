@@ -1,0 +1,65 @@
+{
+  "remoteBaseUrl": "https://raw.githubusercontent.com/modelcontextprotocol/servers/main/src/everything",
+  "repoUrl": "https://github.com/modelcontextprotocol/servers/blob/main/src/everything",
+  "snippets": {
+    "server-setup": {
+      "description": "Basic MCP server with stdio transport and capability declaration",
+      "localFile": "server/index.ts",
+      "remoteFiles": ["server/index.ts", "index.ts"],
+      "category": "server"
+    },
+    "tool-basic": {
+      "description": "Simple tool with Zod input schema (echo pattern)",
+      "localFile": "tools/echo.ts",
+      "remoteFiles": ["tools/echo.ts"],
+      "category": "tools"
+    },
+    "tool-progress": {
+      "description": "Long-running operation with progress notifications",
+      "localFile": "tools/trigger-long-running-operation.ts",
+      "remoteFiles": ["tools/trigger-long-running-operation.ts"],
+      "category": "tools"
+    },
+    "tool-annotations": {
+      "description": "Tool with readOnlyHint, destructiveHint, idempotentHint annotations",
+      "localFile": "tools/get-annotated-message.ts",
+      "remoteFiles": ["tools/get-annotated-message.ts"],
+      "category": "tools"
+    },
+    "tool-output-schema": {
+      "description": "Tool with structured output schema for typed responses",
+      "localFile": "tools/get-structured-content.ts",
+      "remoteFiles": ["tools/get-structured-content.ts"],
+      "category": "tools"
+    },
+    "resource-static": {
+      "description": "Static resource registration from files or fixed data",
+      "localFile": "resources/files.ts",
+      "remoteFiles": ["resources/files.ts"],
+      "category": "resources"
+    },
+    "resource-template": {
+      "description": "Dynamic resource with URI template variables",
+      "localFile": "resources/templates.ts",
+      "remoteFiles": ["resources/templates.ts"],
+      "category": "resources"
+    },
+    "prompt-basic": {
+      "description": "Simple prompt without arguments",
+      "localFile": "prompts/simple.ts",
+      "remoteFiles": ["prompts/simple.ts"],
+      "category": "prompts"
+    },
+    "prompt-args": {
+      "description": "Prompt with required/optional arguments and auto-completion",
+      "localFile": "prompts/args.ts",
+      "remoteFiles": ["prompts/args.ts"],
+      "category": "prompts"
+    },
+    "tool-agentic-sampling": {
+      "description": "Agentic tool using sampling with tools - LLM executes server tools in a loop (MCP 2025-11-25)",
+      "localFile": "tools/agentic-sampling.ts",
+      "category": "tools"
+    }
+  }
+}

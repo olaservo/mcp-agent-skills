@@ -1,0 +1,59 @@
+{
+  "snippets": {
+    "client-setup": {
+      "description": "Basic MCP client with capability declaration and connection pattern",
+      "localFile": "client/index.ts",
+      "category": "client"
+    },
+    "client-with-llm": {
+      "description": "Agentic client with Claude integration - LLM decides when to call tools",
+      "localFile": "client/with-llm.ts",
+      "category": "client"
+    },
+    "transport-stdio": {
+      "description": "StdioClientTransport for connecting to local process servers",
+      "localFile": "transports/stdio.ts",
+      "category": "transports"
+    },
+    "transport-http": {
+      "description": "StreamableHTTPClientTransport for connecting to remote HTTP servers",
+      "localFile": "transports/http.ts",
+      "category": "transports"
+    },
+    "sampling-handler": {
+      "description": "Handle sampling/createMessage requests with tool support - Claude API integration (MCP 2025-11-25)",
+      "localFile": "handlers/sampling.ts",
+      "category": "handlers"
+    },
+    "elicitation-handler": {
+      "description": "Handle elicitation/create requests (form and URL modes) for user input",
+      "localFile": "handlers/elicitation.ts",
+      "category": "handlers"
+    },
+    "roots-handler": {
+      "description": "Expose filesystem roots to servers with change notifications",
+      "localFile": "handlers/roots.ts",
+      "category": "handlers"
+    },
+    "list-changed": {
+      "description": "React to dynamic tool/prompt/resource changes with listChanged handlers",
+      "localFile": "features/list-changed.ts",
+      "category": "features"
+    },
+    "subscriptions": {
+      "description": "Subscribe to resource updates with reactive patterns",
+      "localFile": "features/subscriptions.ts",
+      "category": "features"
+    },
+    "logging": {
+      "description": "Receive server log messages with level filtering",
+      "localFile": "features/logging.ts",
+      "category": "features"
+    },
+    "completions": {
+      "description": "Argument autocomplete for prompts and resources with interactive picker",
+      "localFile": "features/completions.ts",
+      "category": "features"
+    }
+  }
+}
