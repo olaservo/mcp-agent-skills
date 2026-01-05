@@ -14,7 +14,7 @@ Build MCP (Model Context Protocol) servers in TypeScript by referencing code sni
 3. **Customize** the copied code for your use case
 4. **Register** your tools/resources/prompts with the server
 
-Snippets are bundled in this skill. Run `scripts/add.sh --update` to refresh from GitHub.
+Snippets are bundled in this skill's `snippets/` directory.
 
 ---
 
@@ -145,20 +145,7 @@ snippets/
     └── args.ts
 ```
 
-**Using the add script** (from the skill directory):
-```bash
-# List available snippets
-./scripts/add.sh --list
-
-# Copy snippet to a project directory
-./scripts/add.sh server-setup /path/to/my-mcp-server/src
-./scripts/add.sh tool-basic /path/to/my-mcp-server/src
-
-# Refresh snippets from GitHub
-./scripts/add.sh --update
-```
-
-**Or copy directly:**
+**Copy snippets directly:**
 ```bash
 cp snippets/server/index.ts /path/to/my-mcp-server/src/
 cp snippets/tools/echo.ts /path/to/my-mcp-server/src/
