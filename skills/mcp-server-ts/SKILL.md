@@ -50,6 +50,8 @@ Remote service, multi-client, or web deployment?
   └─> Use Streamable HTTP transport
 ```
 
+> **Logging with stdio transport:** Never use `console.log()` in stdio servers - it writes to stdout, which is reserved for MCP protocol messages and will break communication. Use `console.error()` for all diagnostic output (it writes to stderr).
+
 ---
 
 ## Phase 1: Research

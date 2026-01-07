@@ -200,6 +200,8 @@ async function main() {
 main().catch(console.error);
 ```
 
+> **Important:** Always use `console.error()` for logging in stdio servers. `console.log()` writes to stdout, which is reserved for MCP protocol messages - using it will break server communication.
+
 ### Streamable HTTP (Remote)
 
 ```typescript
