@@ -1,0 +1,61 @@
+{
+  "snippets": {
+    "tool-with-ui": {
+      "description": "Register MCP tool with UI resource using registerAppTool and registerAppResource helpers",
+      "localFile": "snippets/server/tool-with-ui.ts",
+      "category": "server",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/server.ts"]
+    },
+    "tool-with-structured": {
+      "description": "Tool returning structuredContent alongside text for typed responses",
+      "localFile": "snippets/server/tool-with-structured.ts",
+      "category": "server"
+    },
+    "resource-with-csp": {
+      "description": "UI resource with Content Security Policy metadata in _meta.ui.csp",
+      "localFile": "snippets/server/resource-with-csp.ts",
+      "category": "server"
+    },
+    "app-vanilla-basic": {
+      "description": "Basic App class initialization with ontoolresult handler (vanilla JavaScript)",
+      "localFile": "snippets/app/app-vanilla-basic.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
+    },
+    "app-vanilla-full": {
+      "description": "Full lifecycle handlers: ontoolresult, ontoolinput, onteardown, onerror, plus messaging",
+      "localFile": "snippets/app/app-vanilla-full.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
+    },
+    "app-react-basic": {
+      "description": "React component with useApp hook for MCP Apps integration",
+      "localFile": "snippets/app/app-react-basic.tsx",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-react/src/mcp-app.tsx"]
+    },
+    "tool-calling": {
+      "description": "Examples of calling MCP tools from within the app UI using callServerTool",
+      "localFile": "snippets/app/tool-calling.ts",
+      "category": "app"
+    },
+    "app-bridge-basic": {
+      "description": "Basic AppBridge setup for embedding MCP app UIs with PostMessageTransport",
+      "localFile": "snippets/host/app-bridge-basic.ts",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    },
+    "app-bridge-handlers": {
+      "description": "Full AppBridge handlers: onmessage, onopenlink, onloggingmessage, onsizechange",
+      "localFile": "snippets/host/app-bridge-handlers.ts",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    }
+  }
+}
