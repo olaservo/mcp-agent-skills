@@ -9,6 +9,11 @@ Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865)
 
 **This is an experimental extension.** MCP Apps enables servers to deliver interactive HTML UIs that run in sandboxed iframes, allowing rich visual interfaces while maintaining security.
 
+> **Tip: Stay up to date!** MCP Apps is under active development. Before starting, check the [ext-apps repository](https://github.com/modelcontextprotocol/ext-apps) for:
+> - [Open Pull Requests](https://github.com/modelcontextprotocol/ext-apps/pulls) - upcoming changes
+> - [Issues](https://github.com/modelcontextprotocol/ext-apps/issues) - known bugs and feature requests
+> - [Recent Commits](https://github.com/modelcontextprotocol/ext-apps/commits/main) - latest changes
+
 ## How It Works
 
 1. **Browse** the snippet catalog below or in `snippets/`
