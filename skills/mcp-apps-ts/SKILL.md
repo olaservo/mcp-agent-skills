@@ -43,7 +43,9 @@ Building the HTML UI that displays to users?
 
 Building a host/client that embeds MCP app UIs?
   └─> Start with HOST snippets
-      - app-bridge-basic: Basic AppBridge embedding
+      - host-full-integration: Complete end-to-end flow
+      - sandbox-proxy: Required for security
+      - app-bridge-basic: Just the AppBridge setup
       - app-bridge-handlers: Full handlers setup
 ```
 
@@ -95,6 +97,8 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 | `tool-calling` | Call MCP tools from app | Interactive UIs |
 | `app-bridge-basic` | Basic host embedding | Simple integration |
 | `app-bridge-handlers` | Full AppBridge handlers | Custom hosts |
+| `host-full-integration` | Complete host flow | End-to-end hosting |
+| `sandbox-proxy` | Sandbox proxy HTML | Host security |
 
 ---
 
@@ -110,6 +114,8 @@ Copy the `tool-with-ui` snippet and customize:
 1. Define your tool's input schema
 2. Create the UI resource HTML content
 3. Link tool to UI via `ui://` URI and `RESOURCE_URI_META_KEY`
+
+> **See also:** For MCP server basics (transports, tool registration patterns), refer to the **mcp-server-ts** skill.
 
 ### 2.2 App-Side: Build the UI
 
@@ -135,10 +141,14 @@ Copy the appropriate app snippet and implement:
 npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk
 ```
 
-Copy the `app-bridge-basic` snippet and configure:
-1. Create AppBridge with MCP client
-2. Register handlers before connecting
-3. Use PostMessageTransport for communication
+Copy the `host-full-integration` snippet for the complete flow, or start with `app-bridge-basic` for just the AppBridge setup:
+1. Connect MCP client to server (see **mcp-client-ts** skill)
+2. Create AppBridge with the connected client
+3. Set up sandbox proxy iframe (use `sandbox-proxy` snippet)
+4. Register handlers before connecting
+5. Load UI resource and initialize app
+
+> **See also:** For MCP client basics (connecting to servers, calling tools), refer to the **mcp-client-ts** skill.
 
 ---
 
@@ -201,6 +211,8 @@ npm install && npm start
 |------|-------------|
 | `app-bridge-basic` | Basic AppBridge setup with PostMessageTransport |
 | `app-bridge-handlers` | Full handlers: `onmessage`, `onopenlink`, `onloggingmessage`, `onsizechange` |
+| `host-full-integration` | Complete flow: MCP client + tool call + UI detection + AppBridge |
+| `sandbox-proxy` | Sandbox proxy HTML for double-iframe security |
 
 ---
 

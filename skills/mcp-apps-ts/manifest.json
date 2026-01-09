@@ -56,6 +56,20 @@
       "category": "host",
       "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
       "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    },
+    "host-full-integration": {
+      "description": "Complete host flow: connect MCP client, call tool, detect UI, fetch resource, embed app",
+      "localFile": "snippets/host/host-full-integration.ts",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    },
+    "sandbox-proxy": {
+      "description": "Sandbox proxy HTML for double-iframe security model (serve from separate origin)",
+      "localFile": "snippets/host/sandbox-proxy.html",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/sandbox.html", "examples/basic-host/src/sandbox.ts"]
     }
   }
 }
