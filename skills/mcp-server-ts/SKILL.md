@@ -222,13 +222,16 @@ When an LLM client connects to your server, it uses your tool descriptions to de
 
 ```typescript
 // Bad - vague description, unclear parameters
-server.tool("process", { data: z.string() }, async ({ data }) => { ... });
+server.registerTool("process", { inputSchema: z.object({ data: z.string() }) }, async ({ data }) => { ... });
 
 // Good - clear purpose, descriptive parameters
-server.tool(
+server.registerTool(
   "convert_markdown_to_html",
-  "Convert markdown text to HTML for rendering. Use when displaying user-generated content.",
-  { markdown_text: z.string().describe("Raw markdown to convert") },
+  {
+    title: "Convert Markdown to HTML",
+    description: "Convert markdown text to HTML for rendering. Use when displaying user-generated content.",
+    inputSchema: z.object({ markdown_text: z.string().describe("Raw markdown to convert") }),
+  },
   async ({ markdown_text }) => { ... }
 );
 ```
