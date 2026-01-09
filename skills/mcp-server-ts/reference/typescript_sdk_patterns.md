@@ -312,6 +312,75 @@ server.registerTool("long_operation", config, async (args, extra) => {
 
 ---
 
+## Task-Based Tools (SEP-1686)
+
+For long-running operations that should not block, use the experimental Tasks API:
+
+```typescript
+import {
+  InMemoryTaskStore,
+  InMemoryTaskMessageQueue,
+} from "@modelcontextprotocol/sdk/experimental";
+import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental";
+import { CallToolResult, GetTaskResult, Task } from "@modelcontextprotocol/sdk/types.js";
+
+// Server setup with task support
+const taskStore = new InMemoryTaskStore();
+const taskMessageQueue = new InMemoryTaskMessageQueue();
+
+const server = new McpServer(
+  { name: "my-server", version: "1.0.0" },
+  {
+    capabilities: {
+      tasks: { list: {}, cancel: {}, requests: { tools: { call: {} } } },
+    },
+    taskStore,
+    taskMessageQueue,
+  }
+);
+
+// Register task-enabled tool
+server.experimental.tasks.registerToolTask(
+  "long_operation",
+  {
+    title: "Long Operation",
+    description: "Async operation with progress",
+    inputSchema: MySchema,
+    execution: { taskSupport: "required" },
+  },
+  {
+    createTask: async (args, extra): Promise<CreateTaskResult> => {
+      const task = await extra.taskStore.createTask({
+        ttl: 60000,      // 1 minute TTL
+        pollInterval: 1000,
+      });
+      // Start async work (don't await)
+      runInBackground(task.taskId, args, extra.taskStore);
+      return { task };
+    },
+    getTask: async (args, extra): Promise<GetTaskResult> => {
+      return await extra.taskStore.getTask(extra.taskId);
+    },
+    getTaskResult: async (args, extra): Promise<CallToolResult> => {
+      return await extra.taskStore.getTaskResult(extra.taskId) as CallToolResult;
+    },
+  }
+);
+
+// Background processing function
+async function runInBackground(taskId: string, args: any, taskStore: any) {
+  await taskStore.updateTaskStatus(taskId, "working", "Processing...");
+  // ... do work ...
+  await taskStore.storeTaskResult(taskId, "completed", {
+    content: [{ type: "text", text: "Done!" }]
+  });
+}
+```
+
+See [MCP Tasks Guide](./mcp_tasks_guide.md) for complete documentation.
+
+---
+
 ## Checking Client Capabilities
 
 ```typescript

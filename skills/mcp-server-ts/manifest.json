@@ -60,6 +60,21 @@
       "description": "Agentic tool using sampling with tools - LLM executes server tools in a loop (MCP 2025-11-25)",
       "localFile": "tools/agentic-sampling.ts",
       "category": "tools"
+    },
+    "server-setup-tasks": {
+      "description": "Server setup with Tasks capability (InMemoryTaskStore, InMemoryTaskMessageQueue)",
+      "localFile": "server/index-with-tasks.ts",
+      "category": "server"
+    },
+    "task-tool-basic": {
+      "description": "Basic task-enabled tool demonstrating MCP Tasks lifecycle (SEP-1686)",
+      "localFile": "tasks/task-tool-basic.ts",
+      "category": "tasks"
+    },
+    "task-input-required": {
+      "description": "Task with input_required status and elicitation side-channel",
+      "localFile": "tasks/task-input-required.ts",
+      "category": "tasks"
     }
   }
 }

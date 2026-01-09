@@ -24,8 +24,12 @@ Snippets are bundled in this skill's `snippets/` directory.
 
 ```
 Need to perform actions with side effects?
-  └─> Use TOOLS (model-controlled)
-      Examples: API calls, file operations, computations
+  └─> Is it a long-running operation (>2-3 seconds)?
+      └─> Use TASKS (async execution with polling)
+          Examples: Research queries, data processing, report generation
+  └─> Is it quick and synchronous?
+      └─> Use TOOLS (model-controlled)
+          Examples: API calls, file operations, computations
 
 Need to expose data for LLM context?
   └─> Is data relatively static or URI-addressable?
@@ -70,15 +74,18 @@ Review the snippet catalog below to identify patterns that match your needs:
 | Snippet | Description | Best For |
 |---------|-------------|----------|
 | `server-setup` | Basic McpServer with stdio | Starting any new server |
+| `server-setup-tasks` | McpServer with Tasks capability | Servers needing async operations |
 | `tool-basic` | Simple tool with Zod schema | API calls, simple operations |
-| `tool-progress` | Tool with progress notifications | Long-running operations |
+| `tool-progress` | Tool with progress notifications | Long-running operations (sync) |
 | `tool-annotations` | Tool with semantic hints | Indicating read-only/destructive ops |
 | `tool-output-schema` | Tool with structured output | Typed responses |
+| `tool-agentic-sampling` | Agentic tool with LLM sampling loop | Server-driven AI workflows |
+| `task-tool-basic` | Task-enabled tool (SEP-1686) | Async long-running operations |
+| `task-input-required` | Task with elicitation | Operations needing user clarification |
 | `resource-static` | Static resource registration | Files, configs, static data |
 | `resource-template` | Dynamic URI template resource | Parameterized data access |
 | `prompt-basic` | Simple prompt | Basic user commands |
 | `prompt-args` | Prompt with arguments | Parameterized commands |
-| `tool-agentic-sampling` | Agentic tool with LLM sampling loop | Server-driven AI workflows |
 
 ### 1.3 Check Client Compatibility
 
@@ -133,12 +140,17 @@ Copy snippets from this skill's `snippets/` directory into your project. The sni
 
 ```
 snippets/
-├── server/index.ts           # Server setup
+├── server/
+│   ├── index.ts              # Server setup
+│   └── index-with-tasks.ts   # Server setup with Tasks
 ├── tools/                    # Tool examples
 │   ├── echo.ts
 │   ├── trigger-long-running-operation.ts
 │   ├── get-annotated-message.ts
 │   └── get-structured-content.ts
+├── tasks/                    # Task examples (SEP-1686)
+│   ├── task-tool-basic.ts
+│   └── task-input-required.ts
 ├── resources/                # Resource examples
 │   ├── files.ts
 │   └── templates.ts
@@ -232,6 +244,14 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 | Name | Description |
 |------|-------------|
 | `server-setup` | Basic McpServer initialization with stdio transport, capabilities declaration, and clean shutdown |
+| `server-setup-tasks` | McpServer with Tasks capability, InMemoryTaskStore, and InMemoryTaskMessageQueue |
+
+### Tasks (SEP-1686)
+
+| Name | Description |
+|------|-------------|
+| `task-tool-basic` | Basic task-enabled tool with createTask, getTask, getTaskResult handlers |
+| `task-input-required` | Task demonstrating input_required status with elicitation side-channel |
 
 ### Tools
 
@@ -265,6 +285,7 @@ For deeper guidance, load these reference documents:
 
 - [TypeScript SDK Patterns](./reference/typescript_sdk_patterns.md) - SDK imports, registration patterns, error handling
 - [MCP Primitives Guide](./reference/mcp_primitives_guide.md) - Tool, Resource, Prompt specifications from MCP spec
+- [MCP Tasks Guide](./reference/mcp_tasks_guide.md) - Task-based async operations (SEP-1686)
 
 ---
 
