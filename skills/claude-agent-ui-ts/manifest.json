@@ -1,7 +1,7 @@
 {
   "snippets": {
     "server": {
-      "description": "Express + WebSocket server wrapping Claude Agent SDK with tool approval",
+      "description": "Express + WebSocket + SQLite server with SDK integration, tool approval, and persistence",
       "localFile": "snippets/server.ts"
     },
     "client": {
