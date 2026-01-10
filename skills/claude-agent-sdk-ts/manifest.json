@@ -1,0 +1,106 @@
+{
+  "remoteBaseUrl": "https://github.com/anthropics/claude-agent-sdk-typescript",
+  "repoUrl": "https://github.com/anthropics/claude-agent-sdk-typescript",
+  "snippets": {
+    "v1-basic-query": {
+      "description": "Simple query() with prompt string, iterate over messages",
+      "localFile": "snippets/agent-v1/basic-query.ts",
+      "category": "agent-v1"
+    },
+    "v1-query-tools": {
+      "description": "Configure allowedTools and disallowedTools arrays",
+      "localFile": "snippets/agent-v1/query-with-tools.ts",
+      "category": "agent-v1"
+    },
+    "v1-query-system": {
+      "description": "Custom systemPrompt option for agent behavior",
+      "localFile": "snippets/agent-v1/query-with-system-prompt.ts",
+      "category": "agent-v1"
+    },
+    "v1-query-queue": {
+      "description": "AsyncIterable<SDKUserMessage> input for multi-turn V1 conversations",
+      "localFile": "snippets/agent-v1/query-with-queue.ts",
+      "category": "agent-v1"
+    },
+    "v2-basic-session": {
+      "description": "Create session with unstable_v2_createSession, send() and stream()",
+      "localFile": "snippets/agent-v2/basic-session.ts",
+      "category": "agent-v2"
+    },
+    "v2-multi-turn": {
+      "description": "Sequential multi-turn conversation with session context retention",
+      "localFile": "snippets/agent-v2/multi-turn.ts",
+      "category": "agent-v2"
+    },
+    "v2-one-shot": {
+      "description": "One-shot query using unstable_v2_prompt convenience function",
+      "localFile": "snippets/agent-v2/one-shot.ts",
+      "category": "agent-v2"
+    },
+    "v2-session-resume": {
+      "description": "Persist and resume sessions with unstable_v2_resumeSession",
+      "localFile": "snippets/agent-v2/session-resume.ts",
+      "category": "agent-v2"
+    },
+    "tools-allowed": {
+      "description": "Whitelist specific tools with allowedTools configuration",
+      "localFile": "snippets/tools/allowed-tools.ts",
+      "category": "tools"
+    },
+    "tools-custom-mcp": {
+      "description": "Create custom MCP server with createSdkMcpServer and tool()",
+      "localFile": "snippets/tools/custom-mcp-server.ts",
+      "category": "tools"
+    },
+    "tools-registration": {
+      "description": "Define tools with Zod schemas using tool() helper function",
+      "localFile": "snippets/tools/tool-registration.ts",
+      "category": "tools"
+    },
+    "hook-pre-tool": {
+      "description": "PreToolUse hooks to block or modify tool calls before execution",
+      "localFile": "snippets/hooks/pre-tool-use.ts",
+      "category": "hooks"
+    },
+    "hook-post-tool": {
+      "description": "PostToolUse hooks to process or transform tool results",
+      "localFile": "snippets/hooks/post-tool-use.ts",
+      "category": "hooks"
+    },
+    "config-settings": {
+      "description": "Configure settingSources array (user, project, local)",
+      "localFile": "snippets/config/settings-sources.ts",
+      "category": "config"
+    },
+    "config-model": {
+      "description": "Model selection options (opus, sonnet, haiku)",
+      "localFile": "snippets/config/model-selection.ts",
+      "category": "config"
+    },
+    "config-cwd": {
+      "description": "Set working directory (cwd) for file operations",
+      "localFile": "snippets/config/working-directory.ts",
+      "category": "config"
+    },
+    "pattern-message-queue": {
+      "description": "Async MessageQueue class for multi-turn V1 conversations",
+      "localFile": "snippets/patterns/message-queue.ts",
+      "category": "patterns"
+    },
+    "pattern-ai-client": {
+      "description": "Reusable AIClient wrapper class around query()",
+      "localFile": "snippets/patterns/ai-client-wrapper.ts",
+      "category": "patterns"
+    },
+    "pattern-websocket": {
+      "description": "WebSocket server with SDK session integration",
+      "localFile": "snippets/patterns/websocket-session.ts",
+      "category": "patterns"
+    },
+    "pattern-subagent": {
+      "description": "Task tool pattern for subagent orchestration",
+      "localFile": "snippets/patterns/subagent-task.ts",
+      "category": "patterns"
+    }
+  }
+}
