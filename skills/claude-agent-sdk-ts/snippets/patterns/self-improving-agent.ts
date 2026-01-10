@@ -75,8 +75,8 @@ async function runSelfImprovingAgent() {
       maxTurns: 20,
       cwd: process.cwd(),
 
-      // Just need file tools - no custom MCP server required!
-      allowedTools: ['Write', 'Read', 'Glob', 'Bash'],
+      // File tools to create skills + Skill tool to use them
+      allowedTools: ['Write', 'Read', 'Glob', 'Bash', 'Skill'],
 
       // Load existing skills so agent can see what's already available
       settingSources: ['project', 'local'],
@@ -87,6 +87,7 @@ SKILL DEVELOPMENT GUIDELINES:
 1. When you create useful utilities, save them as skills
 2. Before creating a new skill, use Glob to check .claude/skills/ for existing ones
 3. Skills are saved to: .claude/skills/<skill-name>/SKILL.md
+4. To USE a skill, invoke it with the Skill tool: Skill({ skill: "skill-name" })
 
 SKILL.md FORMAT (required):
 \`\`\`markdown
