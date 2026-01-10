@@ -377,11 +377,13 @@ This skill focuses on **Claude agents** that use MCP servers. See also:
 
 | Skill | Use When |
 |-------|----------|
+| **claude-agent-ui-ts** | Adding React + WebSocket UI on top of your agent with tool approval |
 | **mcp-server-ts** | Building MCP servers with tools, resources, prompts, sampling, tasks |
 | **mcp-client-ts** | Building custom MCP clients with full protocol support |
 
 **When to use each:**
 - `claude-agent-sdk-ts`: Out-of-the-box Claude agent when you don't need sampling, elicitation, or logging
+- `claude-agent-ui-ts`: Adding a web UI with real-time chat and tool approval to your agent
 - `mcp-client-ts`: Sophisticated modular agents or apps needing full MCP control
 - `mcp-server-ts`: Building the MCP servers themselves
 
