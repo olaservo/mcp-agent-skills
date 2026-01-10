@@ -111,6 +111,11 @@
       "description": "File-based subagent definitions in .claude/agents/*.md",
       "localFile": "snippets/patterns/task-filesystem.ts",
       "category": "patterns"
+    },
+    "pattern-self-improving": {
+      "description": "Agents that develop, test, and persist their own reusable skills",
+      "localFile": "snippets/patterns/self-improving-agent.ts",
+      "category": "patterns"
     }
   }
 }

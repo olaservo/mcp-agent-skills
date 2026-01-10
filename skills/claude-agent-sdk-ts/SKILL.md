@@ -156,6 +156,7 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `pattern-websocket` | WebSocket integration | Real-time apps |
 | `pattern-subagent` | Task tool orchestration | Multi-agent systems |
 | `pattern-task-filesystem` | File-based subagent definitions | Production multi-agent |
+| `pattern-self-improving` | Agents that persist their own skills | Evolving capabilities |
 
 ### 1.3 Check SDK Version
 
@@ -365,6 +366,7 @@ for await (const message of q) {
 | `pattern-websocket` | WebSocket server with SDK session integration |
 | `pattern-subagent` | Task tool pattern for subagent orchestration |
 | `pattern-task-filesystem` | File-based subagent definitions in .claude/agents/*.md |
+| `pattern-self-improving` | Agents that develop, test, and persist their own reusable skills |
 
 ---
 
