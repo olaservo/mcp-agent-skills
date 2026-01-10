@@ -136,10 +136,16 @@ DIRECTORY STRUCTURE:
 ├── references/        # Optional: detailed docs loaded on demand
 └── assets/            # Optional: templates, data files
 
+DEPENDENCIES (Important):
+- NEVER bundle node_modules, __pycache__, .venv, or similar
+- Document dependencies in SKILL.md under "## Requirements"
+- For Python: list in requirements.txt or mention pip packages
+- For Node: list in package.json or mention npm packages
+- Scripts should fail gracefully with clear install instructions
+
 SECURITY:
 - Skills run in the user's environment
 - Never save credentials or secrets
-- Document any dependencies clearly
 - Test before saving`,
     },
   });
@@ -191,6 +197,10 @@ SECURITY:
  * | US     | MM/DD/YYYY | 01/15/2025 |
  * | UK     | DD/MM/YYYY | 15/01/2025 |
  * | ISO    | YYYY-MM-DD | 2025-01-15 |
+ *
+ * ## Requirements
+ * - Node.js 18+ (uses Intl.DateTimeFormat)
+ * - No external dependencies
  *
  * ## Instructions
  * 1. For APIs and databases: always use ISO format
