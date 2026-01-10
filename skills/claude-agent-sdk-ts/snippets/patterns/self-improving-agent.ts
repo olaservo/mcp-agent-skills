@@ -143,6 +143,12 @@ DEPENDENCIES (Important):
 - For Node: list in package.json or mention npm packages
 - Scripts should fail gracefully with clear install instructions
 
+PORTABILITY:
+- Use relative paths within the skill (e.g., scripts/helper.py)
+- Avoid absolute paths or system-specific paths
+- Avoid OS-specific commands when possible (or document them)
+- Skills are just files - they should be easy to copy, share, and version
+
 SECURITY:
 - Skills run in the user's environment
 - Never save credentials or secrets
