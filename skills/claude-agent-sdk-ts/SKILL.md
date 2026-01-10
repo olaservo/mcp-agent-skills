@@ -373,16 +373,17 @@ for await (const message of q) {
 
 ## Related Skills
 
-This skill focuses on **using** MCP servers from the Claude Agent SDK. For **building** MCP servers with full protocol support, see:
+This skill focuses on **Claude agents** that use MCP servers. For building MCP infrastructure, see:
 
 | Skill | Use When |
 |-------|----------|
 | **mcp-server-ts** | Building MCP servers with tools, resources, prompts, sampling, tasks |
-| **mcp-client-ts** | Building MCP clients that connect to servers |
+| **mcp-client-ts** | Building custom MCP clients (non-agent applications) |
 
-**Why use both skills together:**
-- `claude-agent-sdk-ts`: Configures how your agent connects to MCP servers
-- `mcp-server-ts`: Builds the actual MCP servers with full protocol features
+**When to use each:**
+- `claude-agent-sdk-ts`: Claude agents that connect to MCP servers
+- `mcp-client-ts`: Custom clients (IDEs, apps, services) that connect to MCP servers
+- `mcp-server-ts`: Building the MCP servers themselves
 
 The simplified `createSdkMcpServer()` in this skill only supports **tools**. For resources, prompts, subscriptions, logging, roots, sampling, or tasks, build a proper MCP server with `@modelcontextprotocol/sdk` and connect via stdio or Streamable HTTP.
 
