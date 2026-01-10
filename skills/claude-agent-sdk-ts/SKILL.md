@@ -381,25 +381,27 @@ This skill focuses on **Claude agents** that use MCP servers. See also:
 | **mcp-client-ts** | Building custom MCP clients with full protocol support |
 
 **When to use each:**
-- `claude-agent-sdk-ts`: Out-of-the-box Claude agent when you don't need sampling or logging
+- `claude-agent-sdk-ts`: Out-of-the-box Claude agent when you don't need sampling, elicitation, or logging
 - `mcp-client-ts`: Sophisticated modular agents or apps needing full MCP control
 - `mcp-server-ts`: Building the MCP servers themselves
 
-**Claude Agent SDK MCP Capabilities** (assuming same as Claude Code):
+**Claude Agent SDK MCP Capabilities** (verified via everything-server test):
 
-| Capability | Sub-capability | Supported |
-|------------|----------------|-----------|
-| tools | | Yes |
-| tools | listChanged | Yes |
-| resources | | Yes |
-| resources | subscribe | Unverified |
-| resources | listChanged | Yes |
-| prompts | | Yes |
-| prompts | listChanged | Yes |
-| roots | | Yes |
-| roots | listChanged | Unverified |
+| Capability | Sub-capability | Supported | Verification |
+|------------|----------------|-----------|--------------|
+| tools | | Yes | SDK has MCP tool calling |
+| tools | listChanged | Unverified | |
+| resources | | Yes | ListMcpResourcesTool, ReadMcpResourceTool |
+| resources | subscribe | Unverified | |
+| resources | listChanged | Unverified | |
+| prompts | | No | No prompt tools in SDK |
+| roots | | Yes | get-roots-list tool registered |
+| roots | listChanged | Unverified | |
+| sampling | | No | trigger-sampling-request NOT registered |
+| elicitation | | No | trigger-elicitation-request NOT registered |
+| logging | | No | SDK doesn't expose server logs |
 
-For sampling, logging, or verified subscription support, use `mcp-client-ts` to build a custom client.
+For sampling, elicitation, logging, or prompts support, use `mcp-client-ts` to build a custom client.
 
 ---
 
