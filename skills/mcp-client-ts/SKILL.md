@@ -325,12 +325,17 @@ mcpClient.setSystemPrompt("You are a helpful assistant with access to MCP tools.
 
 ## Related Skills
 
-This skill focuses on **building MCP clients**. See also:
+This skill focuses on **building MCP clients** with full protocol support. See also:
 
 | Skill | Use When |
 |-------|----------|
 | **mcp-server-ts** | Building MCP servers that clients connect to |
-| **claude-agent-sdk-ts** | Building Claude agents (which have built-in MCP client) |
+| **claude-agent-sdk-ts** | Building Claude agents (limited MCP: tools + resources only) |
+
+**Why use mcp-client-ts instead of Claude Agent SDK?**
+- Need full MCP protocol (prompts, sampling, roots, logging, subscriptions, tasks)
+- Building non-agent applications (IDEs, services, custom integrations)
+- Need direct control over MCP client behavior
 
 ---
 

@@ -288,8 +288,10 @@ This skill focuses on **building** MCP servers. For **connecting** to MCP server
 
 | Skill | Use When |
 |-------|----------|
-| **mcp-client-ts** | Building MCP clients that connect to servers |
-| **claude-agent-sdk-ts** | Building Claude agents that use MCP servers |
+| **mcp-client-ts** | Full MCP client (tools, resources, prompts, sampling, roots, logging, tasks) |
+| **claude-agent-sdk-ts** | Claude agents (limited MCP: tools + resources only) |
+
+Choose based on which MCP features your server exposes and which the client needs.
 
 ---
 

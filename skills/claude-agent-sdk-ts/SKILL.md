@@ -378,14 +378,26 @@ This skill focuses on **Claude agents** that use MCP servers. For building MCP i
 | Skill | Use When |
 |-------|----------|
 | **mcp-server-ts** | Building MCP servers with tools, resources, prompts, sampling, tasks |
-| **mcp-client-ts** | Building custom MCP clients (non-agent applications) |
+| **mcp-client-ts** | Building custom MCP clients with full protocol support |
 
 **When to use each:**
-- `claude-agent-sdk-ts`: Claude agents that connect to MCP servers
-- `mcp-client-ts`: Custom clients (IDEs, apps, services) that connect to MCP servers
+- `claude-agent-sdk-ts`: Claude agents with **limited MCP support** (tools, resources)
+- `mcp-client-ts`: Full MCP clients (tools, resources, prompts, sampling, roots, logging, subscriptions, tasks)
 - `mcp-server-ts`: Building the MCP servers themselves
 
-The simplified `createSdkMcpServer()` in this skill only supports **tools**. For resources, prompts, subscriptions, logging, roots, sampling, or tasks, build a proper MCP server with `@modelcontextprotocol/sdk` and connect via stdio or Streamable HTTP.
+**MCP Feature Support in Claude Agent SDK:**
+| Feature | Supported |
+|---------|-----------|
+| Tools | Yes |
+| Resources | Yes |
+| Prompts | No |
+| Sampling | No |
+| Roots | No |
+| Logging | No |
+| Subscriptions | No |
+| Tasks | No |
+
+For full MCP protocol support, use `mcp-client-ts` to build a custom client.
 
 ---
 
