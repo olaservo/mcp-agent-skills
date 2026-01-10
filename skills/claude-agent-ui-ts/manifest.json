@@ -1,0 +1,16 @@
+{
+  "snippets": {
+    "server": {
+      "description": "Express + WebSocket server wrapping Claude Agent SDK with tool approval",
+      "localFile": "snippets/server.ts"
+    },
+    "client": {
+      "description": "React chat interface with WebSocket connection and tool approval UI",
+      "localFile": "snippets/client.tsx"
+    },
+    "types": {
+      "description": "Shared TypeScript types for WebSocket messages and tool approval",
+      "localFile": "snippets/types.ts"
+    }
+  }
+}
