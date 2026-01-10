@@ -185,7 +185,8 @@
         // Messages from APP (inner iframe)
         else if (event.source === inner.contentWindow) {
           // Validate origin
-          if (event.origin !== OWN_ORIGIN) {
+          // IMPORTANT: srcdoc iframes have "null" origin (string), not the parent's origin!
+          if (event.origin !== OWN_ORIGIN && event.origin !== "null") {
             console.error("[Sandbox] Rejecting message from inner iframe with unexpected origin:", event.origin);
             return;
           }

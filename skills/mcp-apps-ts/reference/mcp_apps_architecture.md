@@ -189,11 +189,16 @@ import { RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 
 ### App Lifecycle
 
-1. **Initialize**: Host calls `ui/initialize` with context
-2. **Initialized**: App confirms ready via `ui/notifications/initialized`
-3. **Tool Input**: Host sends `ui/toolInput` with arguments
-4. **Tool Result**: Host sends `ui/toolResult` with execution result
-5. **Teardown**: Host requests cleanup via `ui/teardown`
+> **IMPORTANT**: The App initiates the handshake, not the Host!
+
+1. **Initialize**: App sends `ui/initialize` REQUEST to Host
+2. **Initialize Response**: Host RESPONDS with capabilities and context
+3. **Initialized**: App sends `ui/notifications/initialized` notification
+4. **Tool Input**: Host sends `ui/toolInput` with arguments
+5. **Tool Result**: Host sends `ui/toolResult` with execution result
+6. **Teardown**: Host requests cleanup via `ui/teardown`
+
+This follows the MCP pattern where the "client-like" component (App) initiates.
 
 ### App Event Handlers
 
@@ -213,3 +218,65 @@ appBridge.onopenlink       // App requested to open URL
 appBridge.onloggingmessage // App sent log entry
 appBridge.onsizechange     // App requested size change
 ```
+
+## Common Pitfalls
+
+### 1. srcdoc iframes have "null" origin
+
+When using `srcdoc` to load HTML into the inner iframe, the iframe's origin becomes the string `"null"` (not the parent's origin). The sandbox proxy must accept this:
+
+```javascript
+// WRONG - will reject messages from srcdoc iframes
+if (event.origin !== OWN_ORIGIN) { return; }
+
+// CORRECT - accept both normal origin and "null" for srcdoc
+if (event.origin !== OWN_ORIGIN && event.origin !== "null") { return; }
+```
+
+### 2. Protocol direction: App initiates, Host responds
+
+The `ui/initialize` handshake follows MCP's client-server pattern:
+- **App** (client-like) SENDS `ui/initialize` request
+- **Host** (server-like) RESPONDS with capabilities
+
+If you're building a host without the AppBridge SDK, you must RESPOND to `ui/initialize`, not send it:
+
+```javascript
+// In your message handler:
+if (data.method === 'ui/initialize' && data.id) {
+  // RESPOND to the request
+  sendToApp({
+    jsonrpc: '2.0',
+    id: data.id,  // Use the request ID!
+    result: {
+      protocolVersion: '2025-01-01',
+      hostCapabilities: { tools: {}, resources: {} },
+      hostInfo: { name: 'MyHost', version: '1.0.0' },
+    },
+  });
+}
+```
+
+### 3. Tool calls use standard MCP method names
+
+When an App calls `app.callServerTool()`, it sends a `tools/call` request (standard MCP method), not a custom method:
+
+```javascript
+// Handle tool calls from app
+if (data.method === 'tools/call' && data.id) {
+  const { name, arguments: args } = data.params;
+  // Call the MCP server and return result...
+}
+```
+
+### 4. Message sequence matters
+
+The correct sequence after sandbox-proxy-ready:
+
+1. Host sends `sandbox-resource-ready` (HTML loads into inner iframe)
+2. App loads and calls `app.connect()` which sends `ui/initialize`
+3. Host responds to `ui/initialize`
+4. App sends `ui/notifications/initialized`
+5. Host sends `ui/toolInput` and `ui/toolResult`
+
+If you send `ui/initialize` before the HTML is loaded, the message is lost.

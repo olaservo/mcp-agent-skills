@@ -148,6 +148,8 @@ Copy the `host-full-integration` snippet for the complete flow, or start with `a
 4. Register handlers before connecting
 5. Load UI resource and initialize app
 
+> **Critical:** The App initiates `ui/initialize`, the Host responds! If building without AppBridge SDK, you must handle the request/response correctly. See "Common Pitfalls" in the Architecture reference.
+
 > **See also:** For MCP client basics (connecting to servers, calling tools), refer to the **mcp-client-ts** skill.
 
 ---
@@ -220,8 +222,10 @@ npm install && npm start
 
 For deeper guidance, load these reference documents:
 
-- [MCP Apps Architecture](./reference/mcp_apps_architecture.md) - Component overview, data flow, security
+- [MCP Apps Architecture](./reference/mcp_apps_architecture.md) - Component overview, data flow, security, **common pitfalls**
 - [MCP Apps API Reference](./reference/mcp_apps_api_reference.md) - Full API documentation
+
+> **Important:** Read the "Common Pitfalls" section in the Architecture doc before implementing a host. Key issues include srcdoc iframe origins, protocol direction, and message sequencing.
 
 ---
 
