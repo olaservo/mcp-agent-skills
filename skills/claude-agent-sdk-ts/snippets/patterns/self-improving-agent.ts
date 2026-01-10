@@ -83,35 +83,64 @@ async function runSelfImprovingAgent() {
 
       systemPrompt: `You are a self-improving coding assistant.
 
-SKILL DEVELOPMENT GUIDELINES:
-1. When you create useful utilities, save them as skills
-2. Before creating a new skill, use Glob to check .claude/skills/ for existing ones
-3. Skills are saved to: .claude/skills/<skill-name>/SKILL.md
-4. To USE a skill, invoke it with the Skill tool: Skill({ skill: "skill-name" })
+SKILL WORKFLOW:
+1. Before creating, use Glob to check .claude/skills/ for existing skills
+2. Create skills at: .claude/skills/<skill-name>/SKILL.md
+3. To USE a skill: Skill({ skill: "skill-name" })
 
-SKILL.md FORMAT (required):
+PROGRESSIVE DISCLOSURE (Critical for token efficiency):
+Skills load in 3 stages - design for this:
+- Stage 1: name + description (~100 tokens) - always loaded for discovery
+- Stage 2: SKILL.md body (<5000 tokens) - loaded when skill activates
+- Stage 3: scripts/, references/ - loaded on demand
+
+Keep SKILL.md under 500 lines. Move detailed docs to references/.
+
+NAME CONSTRAINTS:
+- 1-64 chars, lowercase alphanumeric + hyphens only
+- Cannot start/end with hyphen, no consecutive hyphens (--)
+- Directory name MUST match the name field exactly
+
+DESCRIPTION QUALITY (Most Important):
+Include BOTH what it does AND when to use it (activation triggers).
+Good: "Formats dates in US, UK, and ISO formats. Use when working with
+       international dates, data exports, or localization."
+Bad: "Date formatting utility."
+
+SKILL.md FORMAT:
 \`\`\`markdown
 ---
-name: skill-name-here
-description: "Clear description of what this skill does"
+name: skill-name
+description: "What it does AND when to use it (activation triggers)"
 ---
 
 # Skill Title
 
-Instructions for using this skill...
+Brief overview (1-2 sentences).
 
-## Usage
-Examples and guidance...
+## When to Use
+- Trigger phrase 1
+- Trigger phrase 2
+
+## Instructions
+Step-by-step guidance...
+
+## Examples
+Concrete usage examples...
 \`\`\`
 
-OPTIONAL: Add scripts to .claude/skills/<skill-name>/scripts/
-OPTIONAL: Add docs to .claude/skills/<skill-name>/references/
+DIRECTORY STRUCTURE:
+.claude/skills/<skill-name>/
+├── SKILL.md           # Required: <500 lines, <5000 tokens
+├── scripts/           # Optional: executable code (Python, Bash, JS)
+├── references/        # Optional: detailed docs loaded on demand
+└── assets/            # Optional: templates, data files
 
-SECURITY AWARENESS:
+SECURITY:
 - Skills run in the user's environment
-- Avoid skills that modify system settings
-- Never save credentials or secrets in skills
-- Test thoroughly before saving`,
+- Never save credentials or secrets
+- Document any dependencies clearly
+- Test before saving`,
     },
   });
 
@@ -141,40 +170,39 @@ SECURITY AWARENESS:
  * ```markdown
  * ---
  * name: date-formatter
- * description: "Format dates in multiple locales (US, UK, ISO). Use when
- *               working with international date formats or data exports."
+ * description: "Formats dates in US, UK, and ISO formats. Use when working
+ *               with international dates, CSV exports, API responses, or
+ *               when the user mentions date formatting or localization."
  * ---
  *
  * # Date Formatter
  *
- * Provides consistent date formatting across locales.
+ * Provides consistent date formatting across locales for data exports and APIs.
+ *
+ * ## When to Use
+ * - Formatting dates for international users
+ * - Preparing data for CSV/Excel exports
+ * - Converting API response dates
+ * - Standardizing date formats in datasets
  *
  * ## Supported Formats
- * - US: MM/DD/YYYY (e.g., 01/15/2025)
- * - UK: DD/MM/YYYY (e.g., 15/01/2025)
- * - ISO: YYYY-MM-DD (e.g., 2025-01-15)
+ * | Locale | Format     | Example    |
+ * |--------|------------|------------|
+ * | US     | MM/DD/YYYY | 01/15/2025 |
+ * | UK     | DD/MM/YYYY | 15/01/2025 |
+ * | ISO    | YYYY-MM-DD | 2025-01-15 |
  *
- * ## Usage
- * When formatting dates, use these patterns:
- * - For APIs and databases: ISO format
- * - For US users: US format
- * - For international users: UK or ISO format
+ * ## Instructions
+ * 1. For APIs and databases: always use ISO format
+ * 2. For US users: use US format (MM/DD/YYYY)
+ * 3. For international/EU users: use UK or ISO format
  *
- * ## Code Template
- * ```typescript
- * function formatDate(date: Date, locale: 'US' | 'UK' | 'ISO'): string {
- *   const d = date.getDate().toString().padStart(2, '0');
- *   const m = (date.getMonth() + 1).toString().padStart(2, '0');
- *   const y = date.getFullYear();
- *
- *   switch (locale) {
- *     case 'US': return `${m}/${d}/${y}`;
- *     case 'UK': return `${d}/${m}/${y}`;
- *     case 'ISO': return `${y}-${m}-${d}`;
- *   }
- * }
+ * ## Example Code
+ * See scripts/format-date.ts for a reusable implementation.
  * ```
- * ```
+ *
+ * File: .claude/skills/date-formatter/scripts/format-date.ts
+ * (Detailed implementation moved to scripts/ for progressive disclosure)
  */
 
 /**
