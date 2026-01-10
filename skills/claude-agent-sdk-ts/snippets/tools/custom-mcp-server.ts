@@ -4,6 +4,11 @@
  * Create custom tools using createSdkMcpServer and tool() helper.
  * This enables domain-specific tools for your agent.
  *
+ * IMPORTANT: createSdkMcpServer ONLY supports tools.
+ * It does NOT support resources, prompts, or other MCP primitives.
+ * For full MCP server features, use @modelcontextprotocol/sdk directly
+ * and connect via mcpServers config (see mcp-server-config.ts).
+ *
  * Source: https://github.com/anthropics/claude-agent-sdk-typescript
  */
 

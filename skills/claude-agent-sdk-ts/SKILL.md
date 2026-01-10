@@ -144,7 +144,7 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `v2-one-shot` | Quick query, direct result | Simple questions |
 | `v2-session-resume` | Persist/resume sessions | Long-running assistants |
 | `tools-allowed` | Tool configuration | Security, capability control |
-| `tools-custom-mcp` | Custom MCP server | Domain-specific tools |
+| `tools-custom-mcp` | Custom MCP server (tools only) | Domain-specific tools |
 | `tools-registration` | Zod-based tool definitions | Type-safe custom tools |
 | `hook-pre-tool` | Pre-execution hooks | Blocking, validation |
 | `hook-post-tool` | Post-execution hooks | Logging, transformation |
@@ -338,7 +338,7 @@ for await (const message of q) {
 | Name | Description |
 |------|-------------|
 | `tools-allowed` | Whitelist specific tools with allowedTools configuration |
-| `tools-custom-mcp` | Create custom MCP server with createSdkMcpServer and tool() |
+| `tools-custom-mcp` | Create custom MCP server with createSdkMcpServer (tools only) |
 | `tools-registration` | Define tools with Zod schemas using tool() helper function |
 | `tools-custom-skill` | Load custom skills from .claude/skills/ via Skill tool |
 | `tools-mcp-server-config` | Connect to external MCP servers (stdio, Streamable HTTP) |
