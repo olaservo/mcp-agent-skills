@@ -80,8 +80,8 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `tool-annotations` | Tool with semantic hints | Indicating read-only/destructive ops |
 | `tool-output-schema` | Tool with structured output | Typed responses |
 | `tool-agentic-sampling` | Agentic tool with LLM sampling loop | Server-driven AI workflows |
-| `task-tool-basic` | Task-enabled tool (SEP-1686) | Async long-running operations |
-| `task-input-required` | Task with elicitation | Operations needing user clarification |
+| `task-tool-basic` | Task with multi-stage progress and cancellation | Async long-running operations |
+| `task-input-required` | Task with elicitation and cancellation | Operations needing user clarification |
 | `resource-static` | Static resource registration | Files, configs, static data |
 | `resource-template` | Dynamic URI template resource | Parameterized data access |
 | `prompt-basic` | Simple prompt | Basic user commands |
@@ -253,8 +253,8 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 
 | Name | Description |
 |------|-------------|
-| `task-tool-basic` | Basic task-enabled tool with createTask, getTask, getTaskResult handlers |
-| `task-input-required` | Task demonstrating input_required status with elicitation side-channel |
+| `task-tool-basic` | Task with multi-stage progress, cancellation, and createTask/getTask/getTaskResult/cancelTask handlers |
+| `task-input-required` | Task with input_required status, elicitation side-channel, multi-stage progress, and cancellation |
 
 ### Tools
 

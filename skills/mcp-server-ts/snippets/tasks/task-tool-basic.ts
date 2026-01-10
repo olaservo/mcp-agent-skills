@@ -22,12 +22,17 @@ import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental";
 // Tool input schema
 export const TaskDemoSchema = z.object({
   message: z.string().describe("Message to process"),
-  delayMs: z.number().default(3000).describe("Processing delay in milliseconds"),
 });
+
+// Processing stages for multi-stage progress
+const STAGES = ["Validating input", "Processing message", "Generating response"];
+const STAGE_DURATION = 1000; // 1 second per stage
 
 // Internal state tracking per task
 interface TaskState {
   message: string;
+  currentStage: number;
+  cancelled: boolean;
   completed: boolean;
   result?: CallToolResult;
 }
@@ -37,11 +42,11 @@ const taskStates = new Map<string, TaskState>();
 
 /**
  * Runs the background processing for a task.
- * Updates task status and stores result when complete.
+ * Updates task status as it progresses through stages.
+ * Checks for cancellation between stages.
  */
 async function processTask(
   taskId: string,
-  args: z.infer<typeof TaskDemoSchema>,
   taskStore: {
     updateTaskStatus: (taskId: string, status: Task["status"], message?: string) => Promise<void>;
     storeTaskResult: (taskId: string, status: "completed" | "failed", result: CallToolResult) => Promise<void>;
@@ -51,16 +56,31 @@ async function processTask(
   if (!state) return;
 
   try {
-    // Update status to working with progress message
-    await taskStore.updateTaskStatus(taskId, "working", "Processing message...");
+    // Process each stage
+    for (let i = state.currentStage; i < STAGES.length; i++) {
+      state.currentStage = i;
 
-    // Simulate work
-    await new Promise((resolve) => setTimeout(resolve, args.delayMs));
+      // Check if task was cancelled externally
+      if (state.cancelled) {
+        return; // Exit silently - cancellation is handled elsewhere
+      }
 
-    // Mark complete and store result
+      // Update status message for current stage
+      await taskStore.updateTaskStatus(taskId, "working", `${STAGES[i]}...`);
+
+      // Simulate work for this stage
+      await new Promise((resolve) => setTimeout(resolve, STAGE_DURATION));
+    }
+
+    // All stages complete - generate result
     state.completed = true;
     const result: CallToolResult = {
-      content: [{ type: "text", text: `Processed: ${state.message}` }],
+      content: [
+        {
+          type: "text",
+          text: `Processed: ${state.message}\n\nCompleted ${STAGES.length} stages:\n${STAGES.map((s) => `  - ${s} ✓`).join("\n")}`,
+        },
+      ],
     };
     state.result = result;
 
@@ -78,8 +98,8 @@ const name = "task-demo";
 const config = {
   title: "Task Demo",
   description:
-    "Demonstrates basic task-based execution pattern. " +
-    "Creates a task that processes asynchronously and can be polled for status.",
+    "Demonstrates basic task-based execution pattern with multi-stage progress. " +
+    "Creates a task that processes asynchronously through multiple stages.",
   inputSchema: TaskDemoSchema,
   execution: { taskSupport: "required" as const },
 };
@@ -93,6 +113,7 @@ const config = {
  * - Task creation returns immediately with a taskId
  * - Client polls getTask for status updates
  * - Client calls getTaskResult when status is "completed"
+ * - Supports cancellation via state flag checked between stages
  *
  * @param {McpServer} server - The McpServer instance where the tool will be registered.
  */
@@ -114,11 +135,13 @@ export const registerTaskDemoTool = (server: McpServer) => {
       // Initialize state tracking
       taskStates.set(task.taskId, {
         message: validatedArgs.message,
+        currentStage: 0,
+        cancelled: false,
         completed: false,
       });
 
       // Start async processing (don't await - runs in background)
-      processTask(task.taskId, validatedArgs, extra.taskStore).catch((error) => {
+      processTask(task.taskId, extra.taskStore).catch((error) => {
         console.error(`Task ${task.taskId} failed:`, error);
         extra.taskStore.updateTaskStatus(task.taskId, "failed", String(error)).catch(console.error);
       });
@@ -145,6 +168,18 @@ export const registerTaskDemoTool = (server: McpServer) => {
       taskStates.delete(extra.taskId);
 
       return result as CallToolResult;
+    },
+
+    /**
+     * Cancels a running task.
+     * Called when client invokes `tasks/cancel`.
+     */
+    cancelTask: async (args, extra): Promise<void> => {
+      const state = taskStates.get(extra.taskId);
+      if (state) {
+        state.cancelled = true;
+      }
+      // The task store handles updating the task status to "cancelled"
     },
   });
 };

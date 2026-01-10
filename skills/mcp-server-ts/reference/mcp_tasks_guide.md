@@ -135,6 +135,10 @@ server.experimental.tasks.registerToolTask(
 - Returns final `CallToolResult` when completed
 - Can trigger elicitation if status is `input_required`
 
+**cancelTask**: Called when client invokes `tasks/cancel`.
+- Sets internal cancelled flag
+- Background processing should check this flag and exit gracefully
+
 ---
 
 ## Task Store API
@@ -214,6 +218,43 @@ When a task needs user clarification:
 - Operation completes quickly (<2 seconds)
 - No intermediate status is meaningful
 - Simple request-response pattern suffices
+
+---
+
+## Cancellation Handling
+
+Tasks should check for cancellation between processing stages:
+
+```typescript
+interface TaskState {
+  cancelled: boolean;
+  // ... other state
+}
+
+async function processTask(taskId: string, taskStore: any) {
+  const state = taskStates.get(taskId);
+
+  for (let i = 0; i < STAGES.length; i++) {
+    // Check if task was cancelled externally
+    if (state.cancelled) {
+      return; // Exit gracefully - task store handles status update
+    }
+
+    await taskStore.updateTaskStatus(taskId, "working", `${STAGES[i]}...`);
+    await doStageWork(i);
+  }
+
+  await taskStore.storeTaskResult(taskId, "completed", result);
+}
+
+// In cancelTask handler:
+cancelTask: async (args, extra) => {
+  const state = taskStates.get(extra.taskId);
+  if (state) {
+    state.cancelled = true;
+  }
+}
+```
 
 ---
 

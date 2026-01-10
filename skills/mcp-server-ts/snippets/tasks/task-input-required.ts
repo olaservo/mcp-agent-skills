@@ -27,12 +27,18 @@ export const AmbiguousTaskSchema = z.object({
     .describe("Whether to simulate requiring clarification (triggers input_required status)"),
 });
 
+// Processing stages
+const STAGES = ["Analyzing query", "Gathering context", "Processing request", "Generating response"];
+const STAGE_DURATION = 1000; // 1 second per stage
+
 // Internal state tracking per task
 interface TaskState {
   query: string;
   requiresClarification: boolean;
+  currentStage: number;
   waitingForClarification: boolean;
   clarification?: string;
+  cancelled: boolean;
   completed: boolean;
   result?: CallToolResult;
 }
@@ -43,6 +49,7 @@ const taskStates = new Map<string, TaskState>();
 /**
  * Runs the background processing for a task.
  * May pause for clarification if needed.
+ * Checks for cancellation between stages.
  */
 async function processTask(
   taskId: string,
@@ -55,28 +62,35 @@ async function processTask(
   if (!state) return;
 
   try {
-    await taskStore.updateTaskStatus(taskId, "working", "Analyzing query...");
+    // Process each stage
+    for (let i = state.currentStage; i < STAGES.length; i++) {
+      state.currentStage = i;
 
-    // Simulate initial processing
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Check if task was cancelled externally
+      if (state.cancelled) {
+        return; // Exit silently - cancellation is handled elsewhere
+      }
 
-    // Check if clarification is needed
-    if (state.requiresClarification && !state.clarification) {
-      state.waitingForClarification = true;
-      await taskStore.updateTaskStatus(
-        taskId,
-        "input_required",
-        `Query "${state.query}" is ambiguous. Please clarify your intent.`
-      );
-      // Processing pauses here - getTaskResult will resume it after elicitation
-      return;
+      // Update status message for current stage
+      await taskStore.updateTaskStatus(taskId, "working", `${STAGES[i]}...`);
+
+      // At "Gathering context" stage (index 1), check if clarification is needed
+      if (i === 1 && state.requiresClarification && !state.clarification) {
+        state.waitingForClarification = true;
+        await taskStore.updateTaskStatus(
+          taskId,
+          "input_required",
+          `Query "${state.query}" is ambiguous. Please clarify your intent.`
+        );
+        // Processing pauses here - getTaskResult will resume it after elicitation
+        return;
+      }
+
+      // Simulate work for this stage
+      await new Promise((resolve) => setTimeout(resolve, STAGE_DURATION));
     }
 
-    // Continue processing (either no clarification needed, or already received)
-    await taskStore.updateTaskStatus(taskId, "working", "Processing with clarification...");
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Complete the task
+    // All stages complete - generate result
     state.completed = true;
     const queryDisplay = state.clarification
       ? `${state.query} (clarified: ${state.clarification})`
@@ -86,7 +100,7 @@ async function processTask(
       content: [
         {
           type: "text",
-          text: `Query processed: ${queryDisplay}\n\nThis demonstrates the input_required flow where tasks can pause for user input.`,
+          text: `Query processed: ${queryDisplay}\n\nCompleted ${STAGES.length} stages:\n${STAGES.map((s) => `  - ${s} ✓`).join("\n")}\n\nThis demonstrates the input_required flow where tasks can pause for user input.`,
         },
       ],
     };
@@ -106,7 +120,7 @@ const name = "ambiguous-task";
 const config = {
   title: "Ambiguous Task Demo",
   description:
-    "Demonstrates input_required status and elicitation side-channel. " +
+    "Demonstrates input_required status and elicitation side-channel with multi-stage progress. " +
     "When requiresClarification is true, the task pauses and requests user input via elicitation.",
   inputSchema: AmbiguousTaskSchema,
   execution: { taskSupport: "required" as const },
@@ -116,9 +130,11 @@ const config = {
  * Registers the 'ambiguous-task' tool as a task-based tool with input_required support.
  *
  * This tool demonstrates:
+ * - Multi-stage progress with status updates
  * - Task pausing in input_required state
  * - Using elicitation as a side-channel in getTaskResult
  * - Resuming processing after receiving user input
+ * - Cancellation handling
  *
  * Note: Only works when client supports elicitation capability.
  *
@@ -146,7 +162,9 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
       taskStates.set(task.taskId, {
         query: validatedArgs.query,
         requiresClarification: validatedArgs.requiresClarification && clientSupportsElicitation,
+        currentStage: 0,
         waitingForClarification: false,
+        cancelled: false,
         completed: false,
       });
 
@@ -241,6 +259,19 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
       taskStates.delete(extra.taskId);
 
       return result as CallToolResult;
+    },
+
+    /**
+     * Cancels a running task.
+     * Called when client invokes `tasks/cancel`.
+     */
+    cancelTask: async (args, extra): Promise<void> => {
+      const state = taskStates.get(extra.taskId);
+      if (state) {
+        state.cancelled = true;
+        state.waitingForClarification = false; // Cancel any pending clarification
+      }
+      // The task store handles updating the task status to "cancelled"
     },
   });
 };

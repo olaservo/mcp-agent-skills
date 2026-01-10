@@ -67,12 +67,12 @@
       "category": "server"
     },
     "task-tool-basic": {
-      "description": "Basic task-enabled tool demonstrating MCP Tasks lifecycle (SEP-1686)",
+      "description": "Task-enabled tool with multi-stage progress and cancellation (SEP-1686)",
       "localFile": "tasks/task-tool-basic.ts",
       "category": "tasks"
     },
     "task-input-required": {
-      "description": "Task with input_required status and elicitation side-channel",
+      "description": "Task with input_required status, elicitation, multi-stage progress, and cancellation",
       "localFile": "tasks/task-input-required.ts",
       "category": "tasks"
     }
