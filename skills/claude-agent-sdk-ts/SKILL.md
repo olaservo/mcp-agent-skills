@@ -382,10 +382,10 @@ This skill focuses on **Claude agents** that use MCP servers. See also:
 
 **When to use each:**
 - `claude-agent-sdk-ts`: Out-of-the-box Claude agent when you don't need sampling or logging
-- `mcp-client-ts`: Sophisticated modular agents or apps needing sampling, logging, or full MCP control
+- `mcp-client-ts`: Sophisticated modular agents or apps needing full MCP control
 - `mcp-server-ts`: Building the MCP servers themselves
 
-**Claude Agent SDK MCP Capabilities** (same as Claude Code):
+**Claude Agent SDK MCP Capabilities** (assuming same as Claude Code):
 
 | Capability | Sub-capability | Supported |
 |------------|----------------|-----------|
@@ -398,8 +398,6 @@ This skill focuses on **Claude agents** that use MCP servers. See also:
 | prompts | listChanged | Yes |
 | roots | | Yes |
 | roots | listChanged | Unverified |
-| logging | | No |
-| sampling | | No |
 
 For sampling, logging, or verified subscription support, use `mcp-client-ts` to build a custom client.
 
