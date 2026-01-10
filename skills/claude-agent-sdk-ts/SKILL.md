@@ -373,7 +373,7 @@ for await (const message of q) {
 
 ## Related Skills
 
-This skill focuses on **Claude agents** that use MCP servers. For building MCP infrastructure, see:
+This skill focuses on **Claude agents** that use MCP servers. See also:
 
 | Skill | Use When |
 |-------|----------|
@@ -381,23 +381,27 @@ This skill focuses on **Claude agents** that use MCP servers. For building MCP i
 | **mcp-client-ts** | Building custom MCP clients with full protocol support |
 
 **When to use each:**
-- `claude-agent-sdk-ts`: Claude agents with **limited MCP support** (tools, resources)
-- `mcp-client-ts`: Full MCP clients (tools, resources, prompts, sampling, roots, logging, subscriptions, tasks)
+- `claude-agent-sdk-ts`: Out-of-the-box Claude agent when you don't need sampling or logging
+- `mcp-client-ts`: Sophisticated modular agents or apps needing sampling, logging, or full MCP control
 - `mcp-server-ts`: Building the MCP servers themselves
 
-**MCP Feature Support in Claude Agent SDK:**
-| Feature | Supported |
-|---------|-----------|
-| Tools | Yes |
-| Resources | Yes |
-| Prompts | No |
-| Sampling | No |
-| Roots | No |
-| Logging | No |
-| Subscriptions | No |
-| Tasks | No |
+**Claude Agent SDK MCP Capabilities** (same as Claude Code):
 
-For full MCP protocol support, use `mcp-client-ts` to build a custom client.
+| Capability | Sub-capability | Supported |
+|------------|----------------|-----------|
+| tools | | Yes |
+| tools | listChanged | Yes |
+| resources | | Yes |
+| resources | subscribe | Unverified |
+| resources | listChanged | Yes |
+| prompts | | Yes |
+| prompts | listChanged | Yes |
+| roots | | Yes |
+| roots | listChanged | Unverified |
+| logging | | No |
+| sampling | | No |
+
+For sampling, logging, or verified subscription support, use `mcp-client-ts` to build a custom client.
 
 ---
 
