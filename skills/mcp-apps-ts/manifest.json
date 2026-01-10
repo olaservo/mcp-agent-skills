@@ -70,6 +70,13 @@
       "category": "host",
       "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
       "remoteFiles": ["examples/basic-host/sandbox.html", "examples/basic-host/src/sandbox.ts"]
+    },
+    "scaffold-vanilla-server": {
+      "description": "Complete vanilla JS MCP App server - copy entire directory and run with npm install && npm run dev",
+      "localFile": "snippets/scaffold/vanilla-server",
+      "category": "scaffold",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs"]
     }
   }
 }

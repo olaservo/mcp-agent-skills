@@ -28,6 +28,12 @@ Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865)
 ### What Role Are You Building?
 
 ```
+Want a complete, runnable starter project?
+  └─> Copy a SCAFFOLD (new!)
+      - scaffold-vanilla-server: Full server + vanilla JS UI
+        Copy the directory, run npm install && npm run dev
+        See snippets/scaffold/vanilla-server/README.md
+
 Building an MCP server that provides tools with UIs?
   └─> Start with SERVER snippets
       - tool-with-ui: Register tool with associated HTML UI
@@ -88,6 +94,7 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 
 | Snippet | Description | Best For |
 |---------|-------------|----------|
+| `scaffold-vanilla-server` | **Complete starter project** | Quickest start - copy & run |
 | `tool-with-ui` | Tool with UI resource registration | Basic server setup |
 | `tool-with-structured` | Tool returning structuredContent | Rich data responses |
 | `resource-with-csp` | UI resource with CSP metadata | Security-conscious apps |
@@ -189,6 +196,26 @@ npm install && npm start
 ---
 
 ## Available Snippets Catalog
+
+### Scaffold (Complete Starter Projects)
+
+| Name | Description |
+|------|-------------|
+| `scaffold-vanilla-server` | Complete MCP App server with vanilla JS UI - copy entire directory and run |
+
+**Quick Start with Scaffold:**
+
+```bash
+# Copy the scaffold to your project
+cp -r snippets/scaffold/vanilla-server ./my-mcp-app
+
+# Install and run
+cd my-mcp-app
+npm install
+npm run dev
+```
+
+Server runs at `http://localhost:3102/mcp`. Test with the [basic-host example](https://github.com/modelcontextprotocol/ext-apps/tree/main/examples/basic-host).
 
 ### Server (MCP Server with UI)
 
