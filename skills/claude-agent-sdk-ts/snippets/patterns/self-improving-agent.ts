@@ -2,8 +2,7 @@
  * Claude Agent SDK - Self-Improving Agent Pattern
  *
  * Agents that can develop, test, and persist reusable skills.
- * This pattern enables incremental capability building where proven
- * solutions are retained for future use.
+ * Uses built-in file tools (Write, Read, Glob) - no custom MCP server needed.
  *
  * SECURITY: This pattern requires sandboxing and careful controls.
  * See: https://www.anthropic.com/engineering/code-execution-with-mcp
@@ -11,10 +10,7 @@
  * Source: https://github.com/anthropics/claude-agent-sdk-typescript
  */
 
-import { query, createSdkMcpServer, tool } from '@anthropic-ai/claude-agent-sdk';
-import { z } from 'zod';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { query } from '@anthropic-ai/claude-agent-sdk';
 
 /**
  * Self-Improving Agent Requirements:
@@ -36,121 +32,32 @@ import * as path from 'path';
  */
 
 /**
- * Custom MCP server for skill management
- */
-const skillsDir = '.claude/skills/generated';
-
-const skillManagementServer = createSdkMcpServer({
-  name: 'skill-manager',
-  version: '1.0.0',
-});
-
-/**
- * Tool: Save a new skill
+ * Skills are just files! No custom MCP server needed.
  *
- * Persists agent-developed code as a reusable skill.
- * In production, add validation and sandboxed testing before saving.
+ * Directory structure:
+ * .claude/skills/
+ * └── my-skill/
+ *     ├── SKILL.md        # Required: Instructions with YAML frontmatter
+ *     ├── scripts/        # Optional: Executable code
+ *     │   └── helper.py
+ *     └── references/     # Optional: Documentation
+ *         └── api-docs.md
+ *
+ * SKILL.md format:
+ * ```markdown
+ * ---
+ * name: my-skill
+ * description: "What this skill does and when to use it"
+ * ---
+ *
+ * # My Skill
+ *
+ * Instructions for Claude on how to use this skill...
+ * ```
  */
-skillManagementServer.registerTool(
-  tool({
-    name: 'save_skill',
-    description: `Save a reusable skill to ${skillsDir}.
-                  The skill will be available in future sessions.
-                  Include clear documentation and test cases.`,
-    parameters: z.object({
-      name: z.string().describe('Skill name (lowercase, hyphens allowed)'),
-      description: z.string().describe('What this skill does'),
-      code: z.string().describe('TypeScript/JavaScript implementation'),
-      testCases: z.array(z.object({
-        input: z.string(),
-        expectedOutput: z.string(),
-      })).optional().describe('Test cases to validate the skill'),
-    }),
-    execute: async ({ name, description, code, testCases }) => {
-      // SECURITY: In production, validate and sandbox-test the code first
-      const skillPath = path.join(skillsDir, name);
-      await fs.mkdir(skillPath, { recursive: true });
-
-      // Create SKILL.md with frontmatter
-      const skillMd = `---
-name: ${name}
-description: "${description}"
-generated: true
-timestamp: "${new Date().toISOString()}"
----
-
-# ${name}
-
-${description}
-
-## Implementation
-
-\`\`\`typescript
-${code}
-\`\`\`
-
-${testCases ? `## Test Cases
-
-${testCases.map((tc, i) => `### Test ${i + 1}
-- Input: \`${tc.input}\`
-- Expected: \`${tc.expectedOutput}\`
-`).join('\n')}` : ''}
-`;
-
-      await fs.writeFile(path.join(skillPath, 'SKILL.md'), skillMd);
-      await fs.writeFile(path.join(skillPath, 'index.ts'), code);
-
-      return { success: true, path: skillPath };
-    },
-  })
-);
 
 /**
- * Tool: List available skills
- */
-skillManagementServer.registerTool(
-  tool({
-    name: 'list_skills',
-    description: 'List all available generated skills',
-    parameters: z.object({}),
-    execute: async () => {
-      try {
-        const entries = await fs.readdir(skillsDir, { withFileTypes: true });
-        const skills = entries
-          .filter(e => e.isDirectory())
-          .map(e => e.name);
-        return { skills };
-      } catch {
-        return { skills: [], error: 'Skills directory not found' };
-      }
-    },
-  })
-);
-
-/**
- * Tool: Load a skill's implementation
- */
-skillManagementServer.registerTool(
-  tool({
-    name: 'load_skill',
-    description: 'Load a skill implementation for use or modification',
-    parameters: z.object({
-      name: z.string().describe('Skill name to load'),
-    }),
-    execute: async ({ name }) => {
-      const skillPath = path.join(skillsDir, name, 'SKILL.md');
-      try {
-        const content = await fs.readFile(skillPath, 'utf-8');
-        return { found: true, content };
-      } catch {
-        return { found: false, error: `Skill "${name}" not found` };
-      }
-    },
-  })
-);
-
-/**
- * Self-improving agent that can develop and persist skills
+ * Self-improving agent using built-in file tools
  */
 async function runSelfImprovingAgent() {
   console.log('Starting self-improving agent...\n');
@@ -159,37 +66,45 @@ async function runSelfImprovingAgent() {
     prompt: `You are a self-improving agent. When you solve a problem,
              consider whether the solution could be useful in the future.
 
-             If so, save it as a skill using save_skill with:
-             - Clear name and description
-             - Well-documented code
-             - Test cases to validate behavior
+             If so, save it as a skill by writing to .claude/skills/<skill-name>/SKILL.md
 
              Current task: Create a utility that formats dates in multiple
-             locales (US, UK, ISO). Save it as a reusable skill.`,
+             locales (US, UK, ISO). If this is useful, save it as a reusable skill.`,
     options: {
       model: 'sonnet',
       maxTurns: 20,
       cwd: process.cwd(),
 
-      // Include skill management + standard tools
-      allowedTools: ['Read', 'Write', 'Bash'],
+      // Just need file tools - no custom MCP server required!
+      allowedTools: ['Write', 'Read', 'Glob', 'Bash'],
 
-      // Register the skill management MCP server
-      mcpServers: {
-        'skill-manager': skillManagementServer,
-      },
-
-      // Load existing skills
+      // Load existing skills so agent can see what's already available
       settingSources: ['project', 'local'],
 
       systemPrompt: `You are a self-improving coding assistant.
 
 SKILL DEVELOPMENT GUIDELINES:
 1. When you create useful utilities, save them as skills
-2. Before creating a new skill, check if one already exists
-3. Include test cases to validate skill behavior
-4. Document parameters, return values, and edge cases
-5. Use TypeScript with proper types
+2. Before creating a new skill, use Glob to check .claude/skills/ for existing ones
+3. Skills are saved to: .claude/skills/<skill-name>/SKILL.md
+
+SKILL.md FORMAT (required):
+\`\`\`markdown
+---
+name: skill-name-here
+description: "Clear description of what this skill does"
+---
+
+# Skill Title
+
+Instructions for using this skill...
+
+## Usage
+Examples and guidance...
+\`\`\`
+
+OPTIONAL: Add scripts to .claude/skills/<skill-name>/scripts/
+OPTIONAL: Add docs to .claude/skills/<skill-name>/references/
 
 SECURITY AWARENESS:
 - Skills run in the user's environment
@@ -218,52 +133,75 @@ SECURITY AWARENESS:
 }
 
 /**
+ * Example: What the agent might create
+ *
+ * File: .claude/skills/date-formatter/SKILL.md
+ *
+ * ```markdown
+ * ---
+ * name: date-formatter
+ * description: "Format dates in multiple locales (US, UK, ISO). Use when
+ *               working with international date formats or data exports."
+ * ---
+ *
+ * # Date Formatter
+ *
+ * Provides consistent date formatting across locales.
+ *
+ * ## Supported Formats
+ * - US: MM/DD/YYYY (e.g., 01/15/2025)
+ * - UK: DD/MM/YYYY (e.g., 15/01/2025)
+ * - ISO: YYYY-MM-DD (e.g., 2025-01-15)
+ *
+ * ## Usage
+ * When formatting dates, use these patterns:
+ * - For APIs and databases: ISO format
+ * - For US users: US format
+ * - For international users: UK or ISO format
+ *
+ * ## Code Template
+ * ```typescript
+ * function formatDate(date: Date, locale: 'US' | 'UK' | 'ISO'): string {
+ *   const d = date.getDate().toString().padStart(2, '0');
+ *   const m = (date.getMonth() + 1).toString().padStart(2, '0');
+ *   const y = date.getFullYear();
+ *
+ *   switch (locale) {
+ *     case 'US': return `${m}/${d}/${y}`;
+ *     case 'UK': return `${d}/${m}/${y}`;
+ *     case 'ISO': return `${y}-${m}-${d}`;
+ *   }
+ * }
+ * ```
+ * ```
+ */
+
+/**
  * Production Considerations:
  *
  * 1. SANDBOXED EXECUTION
- *    Before saving a skill, test it in a sandboxed environment:
+ *    Before activating a skill, test it in a sandboxed environment:
  *    - Docker container with limited permissions
  *    - Firecracker microVM for stronger isolation
  *    - Resource limits (CPU, memory, time)
  *
  * 2. CODE REVIEW
  *    Optionally require human review before skill activation:
- *    - Log new skills to a review queue
- *    - Use a separate "pending" directory
+ *    - Save to .claude/skills-pending/ first
+ *    - Use a pre-tool hook to block Skill tool until reviewed
  *    - Integrate with PR/review workflow
  *
  * 3. SKILL VERSIONING
  *    Track skill evolution:
- *    - Git-based version control
- *    - Changelog in SKILL.md
- *    - Rollback capability
+ *    - Use git to version .claude/skills/
+ *    - Add changelog section to SKILL.md
+ *    - Consider timestamped backups
  *
  * 4. ACCESS CONTROL
  *    Limit what skills can do:
- *    - Allowlist of safe imports/APIs
- *    - Restricted filesystem paths
- *    - Network access controls
- *
- * Example sandbox integration:
- *
- * ```typescript
- * async function validateInSandbox(code: string): Promise<boolean> {
- *   const container = await docker.createContainer({
- *     Image: 'node:20-slim',
- *     Cmd: ['node', '-e', code],
- *     HostConfig: {
- *       Memory: 128 * 1024 * 1024, // 128MB
- *       CpuPeriod: 100000,
- *       CpuQuota: 50000, // 50% CPU
- *       NetworkMode: 'none',
- *       ReadonlyRootfs: true,
- *     },
- *   });
- *   // Run and check exit code
- *   const result = await container.start();
- *   return result.StatusCode === 0;
- * }
- * ```
+ *    - Review scripts before allowing execution
+ *    - Use allowedTools to restrict skill capabilities
+ *    - Monitor skill usage with PostToolUse hooks
  */
 
 // Run the agent
