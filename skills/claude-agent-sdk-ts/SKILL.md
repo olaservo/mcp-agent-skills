@@ -155,6 +155,7 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `pattern-ai-client` | Reusable client wrapper | Application architecture |
 | `pattern-websocket` | WebSocket integration | Real-time apps |
 | `pattern-subagent` | Task tool orchestration | Multi-agent systems |
+| `pattern-task-filesystem` | File-based subagent definitions | Production multi-agent |
 
 ### 1.3 Check SDK Version
 
@@ -338,6 +339,7 @@ for await (const message of q) {
 | `tools-allowed` | Whitelist specific tools with allowedTools configuration |
 | `tools-custom-mcp` | Create custom MCP server with createSdkMcpServer and tool() |
 | `tools-registration` | Define tools with Zod schemas using tool() helper function |
+| `tools-custom-skill` | Load custom skills from .claude/skills/ via Skill tool |
 
 ### Hooks
 
@@ -362,6 +364,7 @@ for await (const message of q) {
 | `pattern-ai-client` | Reusable AIClient wrapper class around query() |
 | `pattern-websocket` | WebSocket server with SDK session integration |
 | `pattern-subagent` | Task tool pattern for subagent orchestration |
+| `pattern-task-filesystem` | File-based subagent definitions in .claude/agents/*.md |
 
 ---
 

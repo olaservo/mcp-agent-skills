@@ -57,6 +57,11 @@
       "localFile": "snippets/tools/tool-registration.ts",
       "category": "tools"
     },
+    "tools-custom-skill": {
+      "description": "Load custom skills from .claude/skills/ directories via Skill tool",
+      "localFile": "snippets/tools/custom-skill.ts",
+      "category": "tools"
+    },
     "hook-pre-tool": {
       "description": "PreToolUse hooks to block or modify tool calls before execution",
       "localFile": "snippets/hooks/pre-tool-use.ts",
@@ -98,8 +103,13 @@
       "category": "patterns"
     },
     "pattern-subagent": {
-      "description": "Task tool pattern for subagent orchestration",
+      "description": "Task tool pattern for programmatic subagent orchestration",
       "localFile": "snippets/patterns/subagent-task.ts",
+      "category": "patterns"
+    },
+    "pattern-task-filesystem": {
+      "description": "File-based subagent definitions in .claude/agents/*.md",
+      "localFile": "snippets/patterns/task-filesystem.ts",
       "category": "patterns"
     }
   }
