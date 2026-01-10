@@ -341,6 +341,7 @@ for await (const message of q) {
 | `tools-custom-mcp` | Create custom MCP server with createSdkMcpServer and tool() |
 | `tools-registration` | Define tools with Zod schemas using tool() helper function |
 | `tools-custom-skill` | Load custom skills from .claude/skills/ via Skill tool |
+| `tools-mcp-server-config` | Connect to external MCP servers (stdio, Streamable HTTP) |
 
 ### Hooks
 
@@ -367,6 +368,23 @@ for await (const message of q) {
 | `pattern-subagent` | Task tool pattern for subagent orchestration |
 | `pattern-task-filesystem` | File-based subagent definitions in .claude/agents/*.md |
 | `pattern-self-improving` | Agents that develop, test, and persist their own reusable skills |
+
+---
+
+## Related Skills
+
+This skill focuses on **using** MCP servers from the Claude Agent SDK. For **building** MCP servers with full protocol support, see:
+
+| Skill | Use When |
+|-------|----------|
+| **mcp-server-ts** | Building MCP servers with tools, resources, prompts, sampling, tasks |
+| **mcp-client-ts** | Building MCP clients that connect to servers |
+
+**Why use both skills together:**
+- `claude-agent-sdk-ts`: Configures how your agent connects to MCP servers
+- `mcp-server-ts`: Builds the actual MCP servers with full protocol features
+
+The simplified `createSdkMcpServer()` in this skill only supports **tools**. For resources, prompts, subscriptions, logging, roots, sampling, or tasks, build a proper MCP server with `@modelcontextprotocol/sdk` and connect via stdio or Streamable HTTP.
 
 ---
 

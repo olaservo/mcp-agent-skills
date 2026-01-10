@@ -282,6 +282,16 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 
 ---
 
+## Related Skills
+
+This skill focuses on **building** MCP servers. For **connecting** to MCP servers from a Claude agent, see:
+
+| Skill | Use When |
+|-------|----------|
+| **claude-agent-sdk-ts** | Building agents that connect to MCP servers |
+
+---
+
 ## Reference Files
 
 For deeper guidance, load these reference documents:

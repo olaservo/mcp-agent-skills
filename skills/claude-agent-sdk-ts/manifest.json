@@ -62,6 +62,11 @@
       "localFile": "snippets/tools/custom-skill.ts",
       "category": "tools"
     },
+    "tools-mcp-server-config": {
+      "description": "Connect to external MCP servers via stdio and Streamable HTTP",
+      "localFile": "snippets/tools/mcp-server-config.ts",
+      "category": "tools"
+    },
     "hook-pre-tool": {
       "description": "PreToolUse hooks to block or modify tool calls before execution",
       "localFile": "snippets/hooks/pre-tool-use.ts",
