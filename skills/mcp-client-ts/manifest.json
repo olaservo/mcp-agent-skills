@@ -54,6 +54,16 @@
       "description": "Argument autocomplete for prompts and resources with interactive picker",
       "localFile": "features/completions.ts",
       "category": "features"
+    },
+    "tasks": {
+      "description": "Task support for long-running tool operations with progress streaming",
+      "localFile": "capabilities/tasks.ts",
+      "category": "capabilities"
+    },
+    "persistent-task-store": {
+      "description": "File-based task store with persistence and TTL cleanup",
+      "localFile": "stores/persistent-task-store.ts",
+      "category": "stores"
     }
   }
 }

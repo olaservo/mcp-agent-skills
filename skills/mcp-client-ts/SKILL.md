@@ -7,7 +7,7 @@ description: Build TypeScript MCP clients with composable code snippets. Include
 
 Build MCP (Model Context Protocol) clients in TypeScript using code snippets and patterns from the official SDK.
 
-**Now includes advanced capability support:** sampling handlers, elicitation, roots, dynamic discovery, and resource subscriptions.
+**Now includes advanced capability support:** sampling handlers, elicitation, roots, dynamic discovery, resource subscriptions, and task support with persistence.
 
 ## How It Works
 
@@ -75,6 +75,8 @@ Before writing code, understand:
 | `subscriptions` | Subscribe to resource updates | Live data feeds, monitoring |
 | `logging` | Receive server log messages with level filtering | Debugging, monitoring |
 | `completions` | Argument autocomplete with interactive picker | IDE-like experiences |
+| `tasks` | Task support for long-running operations with streaming | Servers with async/long-running tools |
+| `persistent-task-store` | File-based task persistence with TTL | Resumable task tracking |
 
 ---
 
@@ -262,6 +264,18 @@ node dist/index.js @modelcontextprotocol/server-everything "add 5 and 3"
 | `logging` | Receive server log messages with level filtering |
 | `completions` | Argument autocomplete for prompts and resources with interactive picker |
 
+### Capabilities
+
+| Name | Description |
+|------|-------------|
+| `tasks` | Task support for long-running tool operations with progress streaming |
+
+### Stores
+
+| Name | Description |
+|------|-------------|
+| `persistent-task-store` | File-based task store with persistence and TTL cleanup |
+
 ---
 
 ## Quick Reference
@@ -403,7 +417,10 @@ const client = new Client(
       // Expose filesystem roots
       roots: {
         listChanged: true  // Notify on changes
-      }
+      },
+
+      // Enable task support for long-running operations
+      tasks: {}
     }
   }
 );
@@ -470,6 +487,59 @@ if (caps?.resources?.subscribe) {
     }
   );
 }
+```
+
+### Task Support
+
+Handle long-running tool operations with progress tracking:
+
+```typescript
+import {
+  serverSupportsTasks,
+  callToolWithTaskSupport,
+  callToolAuto,
+  listTasks,
+  getTask,
+  cancelTask,
+} from './capabilities/tasks.js';
+
+// Check if server supports tasks
+if (serverSupportsTasks(client)) {
+  // Call a tool with streaming progress updates
+  const result = await callToolWithTaskSupport(client, 'long-running-tool', { arg: 'value' }, {
+    onTaskCreated: (task) => console.log('Task started:', task.taskId),
+    onTaskStatusUpdate: (task) => console.log('Status:', task.status, task.statusMessage),
+  });
+
+  // Or auto-detect: uses task mode if tool supports it, regular mode otherwise
+  const tools = await client.listTools();
+  const tool = tools.tools.find(t => t.name === 'my-tool');
+  const autoResult = await callToolAuto(client, tool, { arg: 'value' });
+
+  // Task management
+  const tasks = await listTasks(client);
+  const task = await getTask(client, 'task-id');
+  await cancelTask(client, 'task-id');
+}
+```
+
+For persistent task storage across restarts:
+
+```typescript
+import { createPersistentTaskStore } from './stores/persistent-task-store.js';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+
+const taskStore = createPersistentTaskStore({
+  dataDir: join(homedir(), '.my-app', 'data'),
+  persistenceEnabled: true,
+  onLog: (msg) => console.log(msg),
+});
+
+const client = new Client(
+  { name: 'my-client', version: '1.0.0' },
+  { capabilities: { tasks: {} }, taskStore }
+);
 ```
 
 ### Use Case Examples
