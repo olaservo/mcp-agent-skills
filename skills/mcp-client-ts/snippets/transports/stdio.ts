@@ -1,8 +1,6 @@
 /**
  * StdioClientTransport - Connect to Local MCP Servers
  *
- * Source: Based on https://github.com/modelcontextprotocol/typescript-sdk
- *
  * Use StdioClientTransport when connecting to MCP servers that run as
  * local processes (spawned subprocesses). This is the most common transport
  * for CLI tools and desktop applications like Claude Desktop.

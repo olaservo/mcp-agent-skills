@@ -1,9 +1,6 @@
 /**
  * MCP Client Setup
  *
- * Source: Based on https://modelcontextprotocol.io/docs/develop/build-client
- * and https://github.com/modelcontextprotocol/typescript-sdk
- *
  * This snippet demonstrates basic MCP client initialization and usage.
  * Customize as needed for your use case.
  */

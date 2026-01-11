@@ -9,6 +9,8 @@ Build MCP (Model Context Protocol) clients in TypeScript using code snippets and
 
 **Now includes advanced capability support:** sampling handlers, elicitation, roots, dynamic discovery, resource subscriptions, and task support with persistence.
 
+<!-- TODO: Add source references to all snippets pointing to their origin repos (e.g., skilljack-client, typescript-sdk) -->
+
 ## How It Works
 
 1. **Browse** the snippet catalog below or in `snippets/`
