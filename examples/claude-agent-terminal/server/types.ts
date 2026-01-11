@@ -1,7 +1,5 @@
 /**
- * Shared types for Claude Agent UI
- *
- * Use these types in both server and client for type-safe WebSocket communication.
+ * Shared types for Claude Agent UI server
  */
 
 // Message stored in chat history

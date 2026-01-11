@@ -413,6 +413,142 @@ export async function getPrompt(
 }
 
 // ============================================================================
+// SUBSCRIPTIONS
+// ============================================================================
+
+/**
+ * Subscribe to a resource using its qualified URI (server__uri).
+ *
+ * @example
+ * ```typescript
+ * await subscribeResource(clients, "files__file:///data.json");
+ * ```
+ */
+export async function subscribeResource(
+  clients: Map<string, Client>,
+  qualifiedUri: string
+): Promise<void> {
+  const { serverName, name: uri } = parseQualifiedName(qualifiedUri);
+
+  const client = clients.get(serverName);
+  if (!client) {
+    throw new Error(
+      `Server "${serverName}" not found. Available servers: ${Array.from(clients.keys()).join(", ")}`
+    );
+  }
+
+  await client.subscribeResource({ uri });
+}
+
+/**
+ * Unsubscribe from a resource using its qualified URI (server__uri).
+ *
+ * @example
+ * ```typescript
+ * await unsubscribeResource(clients, "files__file:///data.json");
+ * ```
+ */
+export async function unsubscribeResource(
+  clients: Map<string, Client>,
+  qualifiedUri: string
+): Promise<void> {
+  const { serverName, name: uri } = parseQualifiedName(qualifiedUri);
+
+  const client = clients.get(serverName);
+  if (!client) {
+    throw new Error(
+      `Server "${serverName}" not found. Available servers: ${Array.from(clients.keys()).join(", ")}`
+    );
+  }
+
+  await client.unsubscribeResource({ uri });
+}
+
+// ============================================================================
+// COMPLETIONS
+// ============================================================================
+
+/** Completion result from a server */
+export interface CompletionResult {
+  values: string[];
+  total?: number;
+  hasMore?: boolean;
+}
+
+/** Context for completions (previously-resolved arguments) */
+export interface CompletionContext {
+  arguments?: Record<string, string>;
+}
+
+/**
+ * Get completions for a prompt argument using qualified prompt name.
+ *
+ * @example
+ * ```typescript
+ * const result = await completePromptArgument(clients, "templates__greeting", "name", "Jo");
+ * // result.values might be ["John", "Joan", "Jose", ...]
+ * ```
+ */
+export async function completePromptArgument(
+  clients: Map<string, Client>,
+  qualifiedPromptName: string,
+  argName: string,
+  value: string,
+  context?: CompletionContext
+): Promise<CompletionResult> {
+  const { serverName, name: promptName } = parseQualifiedName(qualifiedPromptName);
+
+  const client = clients.get(serverName);
+  if (!client) {
+    throw new Error(
+      `Server "${serverName}" not found. Available servers: ${Array.from(clients.keys()).join(", ")}`
+    );
+  }
+
+  const response = await client.complete({
+    ref: { type: "ref/prompt", name: promptName },
+    argument: { name: argName, value },
+    context,
+  });
+
+  return response.completion;
+}
+
+/**
+ * Get completions for a resource template argument using qualified URI.
+ *
+ * @example
+ * ```typescript
+ * const result = await completeResourceArgument(clients, "files__file:///users/{id}.json", "id", "12");
+ * // result.values might be ["123", "124", "125", ...]
+ * ```
+ */
+export async function completeResourceArgument(
+  clients: Map<string, Client>,
+  qualifiedUri: string,
+  argName: string,
+  value: string,
+  context?: CompletionContext
+): Promise<CompletionResult> {
+  const { serverName, name: uri } = parseQualifiedName(qualifiedUri);
+
+  const client = clients.get(serverName);
+  if (!client) {
+    throw new Error(
+      `Server "${serverName}" not found. Available servers: ${Array.from(clients.keys()).join(", ")}`
+    );
+  }
+
+  const response = await client.complete({
+    ref: { type: "ref/resource", uri },
+    argument: { name: argName, value },
+    context,
+  });
+
+  return response.completion;
+}
+
+// ============================================================================
 // UTILITY
 // ============================================================================
 

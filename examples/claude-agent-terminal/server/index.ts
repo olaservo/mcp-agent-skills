@@ -9,8 +9,8 @@
  *
  * Usage:
  *   npm install express cors ws @anthropic-ai/claude-agent-sdk better-sqlite3
- *   npm install -D @types/better-sqlite3
- *   npx ts-node server.ts
+ *   npm install -D @types/better-sqlite3 @types/express @types/cors @types/ws tsx
+ *   npx tsx server/index.ts
  */
 
 import express from "express";
@@ -218,8 +218,8 @@ class Session {
 
           // Look up the toolId from our tracking map
           const toolKey = `${input.tool_name}:${JSON.stringify(input.tool_input)}`;
-          const toolId = this.pendingToolIds.get(toolKey) || requestId;
-          this.pendingToolIds.delete(toolKey);
+          const toolId = this.pendingToolIds.get(toolKey) || requestId; // fallback to requestId if not found
+          this.pendingToolIds.delete(toolKey); // Clean up
 
           const request: ToolApprovalRequest = {
             type: "tool_approval_request",

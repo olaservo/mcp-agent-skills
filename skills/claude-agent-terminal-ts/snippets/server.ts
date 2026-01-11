@@ -7,10 +7,12 @@
  * - SQLite persistence for chat history and SDK session resumption
  * - Configurable workingDirectory, model, allowedTools
  *
- * Usage:
+ * Dependencies:
  *   npm install express cors ws @anthropic-ai/claude-agent-sdk better-sqlite3
- *   npm install -D @types/better-sqlite3
- *   npx ts-node server.ts
+ *   npm install -D @types/better-sqlite3 @types/express @types/cors @types/ws tsx
+ *
+ * Usage:
+ *   npx tsx server.ts
  */
 
 import express from "express";
@@ -21,35 +23,43 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { HookJSONOutput } from "@anthropic-ai/claude-agent-sdk";
 import Database from "better-sqlite3";
 import type {
-  ChatMessage,
+  ServerChatMessage,
   ClientMessage,
   ServerMessage,
   ToolApprovalRequest,
 } from "./types";
 
 // ============== CONFIG ==============
-// Set these before starting the server (reference claude-agent-sdk-ts skill for details)
+// Customize these before starting the server
 const CONFIG = {
   port: 3001,
   workingDirectory: process.cwd(),
   model: "sonnet" as "opus" | "sonnet" | "haiku",
   allowedTools: ["Bash", "Read", "Write", "Edit", "Glob", "Grep"],
   systemPrompt: "You are a helpful AI assistant.",
-  dbPath: "./chat.db", // SQLite database path
+  dbPath: "./chat.db",
 };
 
 // ============== DATABASE ==============
+interface ChatMessage {
+  id: string;
+  role: string;
+  content: string;
+  timestamp: string;
+  toolName?: string;
+  toolInput?: Record<string, unknown>;
+}
+
 class ChatDatabase {
   private db: Database.Database;
 
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
-    this.db.pragma("journal_mode = WAL"); // Better concurrency
+    this.db.pragma("journal_mode = WAL");
     this.init();
   }
 
   private init() {
-    // Sessions table: stores SDK session ID for resumption
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY,
@@ -59,7 +69,6 @@ class ChatDatabase {
       )
     `);
 
-    // Messages table: stores chat messages
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS messages (
         id TEXT PRIMARY KEY,
@@ -74,7 +83,6 @@ class ChatDatabase {
     `);
   }
 
-  // Session methods
   createSession(id: string): void {
     this.db.prepare("INSERT OR IGNORE INTO sessions (id) VALUES (?)").run(id);
   }
@@ -92,7 +100,6 @@ class ChatDatabase {
       .run(sdkSessionId, sessionId);
   }
 
-  // Message methods
   addMessage(sessionId: string, message: ChatMessage): void {
     this.db
       .prepare(`
@@ -110,7 +117,7 @@ class ChatDatabase {
       );
   }
 
-  getMessages(sessionId: string): ChatMessage[] {
+  getMessages(sessionId: string): ServerChatMessage[] {
     const rows = this.db
       .prepare("SELECT * FROM messages WHERE session_id = ? ORDER BY timestamp")
       .all(sessionId) as Array<{
@@ -124,7 +131,7 @@ class ChatDatabase {
 
     return rows.map((row) => ({
       id: row.id,
-      role: row.role as ChatMessage["role"],
+      role: row.role as ServerChatMessage["role"],
       content: row.content,
       timestamp: row.timestamp,
       toolName: row.tool_name ?? undefined,
@@ -137,7 +144,6 @@ class ChatDatabase {
   }
 }
 
-// Initialize database
 const db = new ChatDatabase(CONFIG.dbPath);
 
 // ============== TOOL APPROVAL ==============
@@ -192,7 +198,7 @@ class Session {
   private queue = new MessageQueue();
   private outputIterator: AsyncIterator<unknown> | null = null;
   private subscribers = new Set<WebSocket>();
-  private messages: ChatMessage[] = [];
+  private messages: ServerChatMessage[] = [];
   private isListening = false;
   private sdkSessionId: string | null = null;
   // Track pending tool IDs: key is `${tool_name}:${JSON.stringify(tool_input)}`, value is tool_id
@@ -204,12 +210,10 @@ class Session {
   ) {
     this.id = id;
 
-    // Create session in DB and load existing messages
     db.createSession(id);
     this.messages = db.getMessages(id);
     this.sdkSessionId = db.getSdkSessionId(id);
 
-    // Create PreToolUse hook for tool approval
     const toolApprovalHook = {
       matcher: ".*",
       hooks: [
@@ -247,7 +251,6 @@ class Session {
       ],
     };
 
-    // Build query options - use resume if we have an SDK session ID
     const queryOptions: Record<string, unknown> = {
       maxTurns: 100,
       model: CONFIG.model,
@@ -257,7 +260,6 @@ class Session {
       hooks: { PreToolUse: [toolApprovalHook] },
     };
 
-    // Resume existing SDK session if available (enables multi-turn context)
     if (this.sdkSessionId) {
       queryOptions.resume = this.sdkSessionId;
       console.log(`Resuming SDK session: ${this.sdkSessionId}`);
@@ -285,8 +287,8 @@ class Session {
       content,
       timestamp: new Date().toISOString(),
     };
-    this.messages.push(userMsg);
-    db.addMessage(this.id, userMsg); // Persist to DB
+    this.messages.push(userMsg as ServerChatMessage);
+    db.addMessage(this.id, userMsg);
     this.broadcastAll({ type: "user_message", content });
 
     this.queue.push(content);
@@ -321,7 +323,6 @@ class Session {
       duration_ms?: number;
     };
 
-    // Capture SDK session ID from init message (critical for resumption)
     if (msg.type === "system" && msg.subtype === "init" && msg.session_id) {
       this.sdkSessionId = msg.session_id;
       db.setSdkSessionId(this.id, msg.session_id);
@@ -342,7 +343,6 @@ class Session {
             const toolKey = `${block.name}:${JSON.stringify(block.input)}`;
             this.pendingToolIds.set(toolKey, block.id);
 
-            // Store tool use in messages for history
             const toolMsg: ChatMessage = {
               id: block.id,
               role: "tool_use",
@@ -351,7 +351,7 @@ class Session {
               toolName: block.name,
               toolInput: block.input,
             };
-            this.messages.push(toolMsg);
+            this.messages.push(toolMsg as ServerChatMessage);
             db.addMessage(this.id, toolMsg);
 
             this.broadcastAll({
@@ -380,8 +380,8 @@ class Session {
       content,
       timestamp: new Date().toISOString(),
     };
-    this.messages.push(assistantMsg);
-    db.addMessage(this.id, assistantMsg); // Persist to DB
+    this.messages.push(assistantMsg as ServerChatMessage);
+    db.addMessage(this.id, assistantMsg);
     this.broadcastAll({ type: "assistant_message", content });
   }
 
@@ -404,8 +404,7 @@ app.use(express.json());
 const server = createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
 
-// Session management (single session for simplicity - extend to Map for multi-chat)
-const SESSION_ID = "default"; // Use fixed ID for single-session mode
+const SESSION_ID = "default";
 let session: Session | null = null;
 
 function broadcast(ws: WebSocket, msg: ServerMessage) {
@@ -418,7 +417,6 @@ wss.on("connection", (ws) => {
   console.log("Client connected");
   broadcast(ws, { type: "connected", message: "Connected to chat server" });
 
-  // Create or reuse session (with persistence)
   if (!session) {
     session = new Session(SESSION_ID, broadcast);
   }
@@ -444,7 +442,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Graceful shutdown
 process.on("SIGINT", () => {
   console.log("\nShutting down...");
   db.close();
