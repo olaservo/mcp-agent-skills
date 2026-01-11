@@ -280,3 +280,21 @@ The correct sequence after sandbox-proxy-ready:
 5. Host sends `ui/toolInput` and `ui/toolResult`
 
 If you send `ui/initialize` before the HTML is loaded, the message is lost.
+
+### 5. Host code requires bundling for browsers
+
+The MCP SDK (`@modelcontextprotocol/sdk`) contains Node.js-specific code that doesn't work directly in browsers. Loading via CDN (e.g., esm.sh) will fail with errors like `e.custom is not a function`.
+
+**Solution:** Use Vite or another bundler for host code:
+
+```typescript
+// vite.config.ts for host
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  root: "host",
+  server: { port: 8080 },
+});
+```
+
+Then serve the host via Vite dev server instead of static file serving.
