@@ -117,6 +117,11 @@
       "localFile": "resources/session.ts",
       "remoteFiles": ["resources/session.ts"],
       "category": "resources"
+    },
+    "resource-collection": {
+      "description": "Collection resource returning multiple items with distinct URIs",
+      "localFile": "resources/collection.ts",
+      "category": "resources"
     }
   }
 }

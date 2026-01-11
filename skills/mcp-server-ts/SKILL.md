@@ -89,6 +89,7 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `resource-static` | Static resource registration | Files, configs, static data |
 | `resource-template` | Dynamic URI template resource | Parameterized data access |
 | `resource-session` | Session-scoped temporary resource | Dynamic/computed data |
+| `resource-collection` | Collection returning multiple items | Indexes, composite resources |
 | `prompt-basic` | Simple prompt | Basic user commands |
 | `prompt-args` | Prompt with arguments | Parameterized commands |
 | `prompt-completions` | Context-aware argument completions | Dependent argument values |
@@ -166,7 +167,8 @@ snippets/
 ├── resources/                # Resource examples
 │   ├── files.ts
 │   ├── templates.ts
-│   └── session.ts
+│   ├── session.ts
+│   └── collection.ts
 └── prompts/                  # Prompt examples
     ├── simple.ts
     ├── args.ts
@@ -292,6 +294,7 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 | `resource-static` | Static resource from files or fixed data |
 | `resource-template` | Dynamic resource with URI template variables |
 | `resource-session` | Session-scoped temporary resources (not persisted) |
+| `resource-collection` | Collection resource returning multiple items with distinct URIs |
 
 ### Prompts
 
