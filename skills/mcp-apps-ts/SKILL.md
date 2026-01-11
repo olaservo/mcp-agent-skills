@@ -49,7 +49,8 @@ Building the HTML UI that displays to users?
 
 Building a host/client that embeds MCP app UIs?
   └─> Start with HOST snippets
-      - host-full-integration: Complete end-to-end flow
+      - host-full-integration: Complete end-to-end flow (single server)
+      - host-multi-server: Connect to multiple servers with UI routing
       - sandbox-proxy: Required for security
       - app-bridge-basic: Just the AppBridge setup
       - app-bridge-handlers: Full handlers setup
@@ -105,6 +106,7 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 | `app-bridge-basic` | Basic host embedding | Simple integration |
 | `app-bridge-handlers` | Full AppBridge handlers | Custom hosts |
 | `host-full-integration` | Complete host flow | End-to-end hosting |
+| `host-multi-server` | Multi-server host | Multiple server routing |
 | `sandbox-proxy` | Sandbox proxy HTML | Host security |
 
 ---
@@ -241,6 +243,7 @@ Server runs at `http://localhost:3102/mcp`. Test with the [basic-host example](h
 | `app-bridge-basic` | Basic AppBridge setup with PostMessageTransport |
 | `app-bridge-handlers` | Full handlers: `onmessage`, `onopenlink`, `onloggingmessage`, `onsizechange` |
 | `host-full-integration` | Complete flow: MCP client + tool call + UI detection + AppBridge |
+| `host-multi-server` | Multi-server host with tool aggregation and UI routing |
 | `sandbox-proxy` | Sandbox proxy HTML for double-iframe security |
 
 ---

@@ -241,6 +241,7 @@ node dist/index.js @modelcontextprotocol/server-everything "add 5 and 3"
 |------|-------------|
 | `client-setup` | Basic MCP Client class with connection, tools, prompts, and resources methods |
 | `client-with-llm` | Agentic client with Claude (supports API, Bedrock, Vertex, Azure) |
+| `multi-server` | Connect to multiple MCP servers with tool aggregation and automatic routing |
 
 ### Transports
 
@@ -311,6 +312,33 @@ const result = await client.callTool({ name: "tool-name", arguments: {} });
 
 // Cleanup
 await client.close();
+```
+
+### Multi-Server Pattern
+
+```typescript
+import {
+  connectToAllServers,
+  aggregateTools,
+  callTool,
+  disconnectAll,
+} from './multi-server.js';
+
+// Connect to multiple servers
+const clients = await connectToAllServers({
+  "time": { url: "http://localhost:3001/mcp" },
+  "weather": { url: "http://localhost:3002/mcp" },
+});
+
+// Get all tools with qualified names (server__tool)
+const tools = await aggregateTools(clients);
+// [{ name: "time__get-time", originalName: "get-time", serverName: "time", ... }]
+
+// Call a tool using qualified name
+const result = await callTool(clients, "weather__get-forecast", { city: "Seattle" });
+
+// Cleanup
+await disconnectAll(clients);
 ```
 
 ### Server Instructions
