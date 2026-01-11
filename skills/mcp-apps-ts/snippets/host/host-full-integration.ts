@@ -153,6 +153,9 @@ async function loadSandboxProxy(iframe: HTMLIFrameElement): Promise<void> {
   if (iframe.src) return;
 
   // Set sandbox attributes for outer iframe
+  // Note: Browser warns about allow-scripts + allow-same-origin, but security is
+  // maintained because sandbox proxy is on a DIFFERENT ORIGIN than the host.
+  // The double-iframe model prevents the inner app from accessing host DOM.
   iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms");
 
   const readyNotification: McpUiSandboxProxyReadyNotification["method"] =
