@@ -38,20 +38,23 @@ npm install react react-dom @mantine/core @mantine/hooks @tabler/icons-react
 
 ### 2. Copy Snippets
 
-Copy these files from `snippets/` to your project:
+Copy these files to your project:
+
+- `client.tsx` and `styles.css` from this skill
+- `websocket-server-sqlite.ts` and `websocket-types.ts` from **claude-agent-sdk-ts** skill
 
 ```
 your-project/
   src/
-    types.ts      # Shared types
-    server.ts     # Backend server
-    client.tsx    # React component
-    styles.css    # Terminal theme
+    client.tsx      # Terminal React component (this skill)
+    styles.css      # Terminal theme (this skill)
+    server.ts       # WebSocket server (from claude-agent-sdk-ts)
+    types.ts        # Shared types (from claude-agent-sdk-ts)
 ```
 
 ### 3. Configure Server
 
-Edit `server.ts` CONFIG section:
+Edit the server CONFIG section:
 
 ```typescript
 const CONFIG = {
@@ -100,6 +103,15 @@ React Client          Express Server         Claude Agent SDK
      |-- approve/reject -> |                       |
      |                     |-- continue/block ---> |
 ```
+
+## Snippets
+
+| Snippet | Source | Description |
+|---------|--------|-------------|
+| `client.tsx` | This skill | Terminal-styled React component |
+| `styles.css` | This skill | Dark terminal CSS theme |
+| `websocket-server-sqlite.ts` | claude-agent-sdk-ts | Express + WebSocket + SQLite server |
+| `websocket-types.ts` | claude-agent-sdk-ts | Shared TypeScript types |
 
 ## Keyboard Shortcuts
 
@@ -186,25 +198,9 @@ The component uses a monospace font stack:
 'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'SF Mono', 'Consolas', monospace
 ```
 
-## Working Example
-
-A complete working example is available at:
-```
-mcp-agent-skills/examples/claude-agent-terminal/
-```
-
-To run it:
-```bash
-cd examples/claude-agent-terminal
-npm install
-npm run server   # Terminal 1
-npm run dev      # Terminal 2
-# Open http://localhost:5173
-```
-
 ## Related Skills
 
 | Skill | Description |
 |-------|-------------|
-| `claude-agent-sdk-ts` | SDK patterns and API reference |
-| `claude-agent-ui-ts` | Simpler UI alternative |
+| `claude-agent-sdk-ts` | SDK patterns, API reference, and shared server code |
+| `claude-agent-ui-ts` | Simpler unstyled UI alternative |

@@ -1,8 +1,7 @@
 /**
- * Express + WebSocket server with Claude Agent SDK, tool approval, and SQLite persistence
+ * Claude Agent SDK - WebSocket Server with SQLite (V1 Query API)
  *
- * Features:
- * - WebSocket endpoint for real-time chat
+ * Complete Express + WebSocket server with:
  * - Tool approval flow (client must approve/reject tool calls)
  * - SQLite persistence for chat history and SDK session resumption
  * - Configurable workingDirectory, model, allowedTools
@@ -23,11 +22,11 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import type { HookJSONOutput } from "@anthropic-ai/claude-agent-sdk";
 import Database from "better-sqlite3";
 import type {
-  ServerChatMessage,
+  ChatMessage,
   ClientMessage,
   ServerMessage,
   ToolApprovalRequest,
-} from "./types";
+} from "./websocket-types";
 
 // ============== CONFIG ==============
 // Customize these before starting the server
@@ -41,15 +40,6 @@ const CONFIG = {
 };
 
 // ============== DATABASE ==============
-interface ChatMessage {
-  id: string;
-  role: string;
-  content: string;
-  timestamp: string;
-  toolName?: string;
-  toolInput?: Record<string, unknown>;
-}
-
 class ChatDatabase {
   private db: Database.Database;
 
@@ -117,7 +107,7 @@ class ChatDatabase {
       );
   }
 
-  getMessages(sessionId: string): ServerChatMessage[] {
+  getMessages(sessionId: string): ChatMessage[] {
     const rows = this.db
       .prepare("SELECT * FROM messages WHERE session_id = ? ORDER BY timestamp")
       .all(sessionId) as Array<{
@@ -131,7 +121,7 @@ class ChatDatabase {
 
     return rows.map((row) => ({
       id: row.id,
-      role: row.role as ServerChatMessage["role"],
+      role: row.role as ChatMessage["role"],
       content: row.content,
       timestamp: row.timestamp,
       toolName: row.tool_name ?? undefined,
@@ -144,6 +134,7 @@ class ChatDatabase {
   }
 }
 
+// Initialize database
 const db = new ChatDatabase(CONFIG.dbPath);
 
 // ============== TOOL APPROVAL ==============
@@ -198,7 +189,7 @@ class Session {
   private queue = new MessageQueue();
   private outputIterator: AsyncIterator<unknown> | null = null;
   private subscribers = new Set<WebSocket>();
-  private messages: ServerChatMessage[] = [];
+  private messages: ChatMessage[] = [];
   private isListening = false;
   private sdkSessionId: string | null = null;
   // Track pending tool IDs: key is `${tool_name}:${JSON.stringify(tool_input)}`, value is tool_id
@@ -287,7 +278,7 @@ class Session {
       content,
       timestamp: new Date().toISOString(),
     };
-    this.messages.push(userMsg as ServerChatMessage);
+    this.messages.push(userMsg);
     db.addMessage(this.id, userMsg);
     this.broadcastAll({ type: "user_message", content });
 
@@ -351,7 +342,7 @@ class Session {
               toolName: block.name,
               toolInput: block.input,
             };
-            this.messages.push(toolMsg as ServerChatMessage);
+            this.messages.push(toolMsg);
             db.addMessage(this.id, toolMsg);
 
             this.broadcastAll({
@@ -380,7 +371,7 @@ class Session {
       content,
       timestamp: new Date().toISOString(),
     };
-    this.messages.push(assistantMsg as ServerChatMessage);
+    this.messages.push(assistantMsg);
     db.addMessage(this.id, assistantMsg);
     this.broadcastAll({ type: "assistant_message", content });
   }

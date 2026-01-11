@@ -146,6 +146,16 @@
       "description": "Complete WebSocket chat session with persistence and approval",
       "localFile": "snippets/ui/websocket-chat-session.ts",
       "category": "ui"
+    },
+    "ui-websocket-types": {
+      "description": "Shared TypeScript types for WebSocket protocol and tool approval",
+      "localFile": "snippets/ui/websocket-types.ts",
+      "category": "ui"
+    },
+    "ui-websocket-server-sqlite": {
+      "description": "Complete Express + WebSocket server with SQLite persistence and tool approval",
+      "localFile": "snippets/ui/websocket-server-sqlite.ts",
+      "category": "ui"
     }
   }
 }

@@ -14,23 +14,29 @@ Add a web UI to your Claude Agent SDK agents. Includes real-time WebSocket commu
 
 ## Quick Start
 
-1. Copy the 3 snippet files to your project
+1. Copy the snippets to your project:
+   - `client.tsx` from this skill
+   - `websocket-server-sqlite.ts` and `websocket-types.ts` from **claude-agent-sdk-ts** skill
+
 2. Install dependencies:
    ```bash
    npm install express cors ws @anthropic-ai/claude-agent-sdk better-sqlite3 react react-dom
-   npm install -D @types/better-sqlite3
+   npm install -D @types/better-sqlite3 @types/express @types/cors @types/ws
    ```
-3. Edit `server.ts` CONFIG section (workingDirectory, model, allowedTools, dbPath)
-4. Start server: `npx ts-node server.ts`
+
+3. Edit the server CONFIG section (workingDirectory, model, allowedTools, dbPath)
+
+4. Start server: `npx tsx server.ts`
+
 5. Add `client.tsx` to your React app and open in browser
 
 ## Architecture
 
 ```
-React Client ◄──WebSocket──► Express Server ◄──SDK──► Claude Agent
+React Client <--WebSocket--> Express Server <--SDK--> Claude Agent
 (client.tsx)                 (server.ts)
-                                   │
-                                   ▼
+                                   |
+                                   v
                               SQLite DB
                               (chat.db)
 ```
@@ -46,15 +52,15 @@ React Client ◄──WebSocket──► Express Server ◄──SDK──► Cl
 
 ## Snippets
 
-| Snippet | Description |
-|---------|-------------|
-| `server.ts` | Express + WebSocket + SQLite server with SDK integration and tool approval |
-| `client.tsx` | React chat UI with WebSocket and tool approval buttons |
-| `types.ts` | Shared TypeScript types for messages |
+| Snippet | Source | Description |
+|---------|--------|-------------|
+| `client.tsx` | This skill | React chat UI with WebSocket and tool approval buttons |
+| `websocket-server-sqlite.ts` | claude-agent-sdk-ts | Express + WebSocket + SQLite server with SDK integration |
+| `websocket-types.ts` | claude-agent-sdk-ts | Shared TypeScript types for messages |
 
 ## Configuration
 
-Edit the CONFIG object in `server.ts`:
+Edit the CONFIG object in the server:
 
 ```typescript
 const CONFIG = {
@@ -113,7 +119,7 @@ The client has no styling (functional HTML only). Options:
 
 - Add your own CSS
 - Use Tailwind CSS
-- Look for frontend/UX design helper skills
+- Use **claude-agent-terminal-ts** for a styled terminal theme
 
 ## Production Notes
 
@@ -129,5 +135,5 @@ For production deployment, consider:
 
 | Skill | Use When |
 |-------|----------|
-| **claude-agent-sdk-ts** | SDK API details, tools, hooks, configuration |
-| Frontend/UX design skills | Adding styling and better UI patterns |
+| **claude-agent-sdk-ts** | SDK API details, tools, hooks, configuration, shared server code |
+| **claude-agent-terminal-ts** | Terminal-styled UI with dark theme and keyboard shortcuts |

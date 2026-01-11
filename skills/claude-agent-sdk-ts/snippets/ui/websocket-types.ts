@@ -1,10 +1,13 @@
 /**
- * Shared types for Claude Agent UI
+ * Claude Agent SDK - WebSocket Protocol Types (V1 Query API)
  *
- * Use these types in both server and client for type-safe WebSocket communication.
+ * Shared types for WebSocket communication between client and server.
+ * Used with the V1 query() API and SQLite persistence.
  */
 
-// Message stored in chat history
+// ============== DATABASE TYPES ==============
+
+/** Message stored in chat history (SQLite) */
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "tool_use";
@@ -14,7 +17,9 @@ export interface ChatMessage {
   toolInput?: Record<string, unknown>;
 }
 
-// Tool approval request sent from server to client
+// ============== TOOL APPROVAL ==============
+
+/** Tool approval request sent from server to client */
 export interface ToolApprovalRequest {
   type: "tool_approval_request";
   requestId: string;
@@ -23,14 +28,16 @@ export interface ToolApprovalRequest {
   toolInput: Record<string, unknown>;
 }
 
-// Tool approval response sent from client to server
+/** Tool approval response sent from client to server */
 export interface ToolApprovalResponse {
   type: "tool_approval_response";
   requestId: string;
   approved: boolean;
 }
 
-// WebSocket messages: Server -> Client
+// ============== WEBSOCKET PROTOCOL ==============
+
+/** Messages from server to client */
 export type ServerMessage =
   | { type: "connected"; message: string }
   | { type: "history"; messages: ChatMessage[] }
@@ -41,7 +48,14 @@ export type ServerMessage =
   | { type: "error"; error: string }
   | ToolApprovalRequest;
 
-// WebSocket messages: Client -> Server
+/** Messages from client to server */
 export type ClientMessage =
   | { type: "chat"; content: string }
   | ToolApprovalResponse;
+
+// ============== UTILITIES ==============
+
+/** Generate a unique message ID */
+export function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}

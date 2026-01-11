@@ -1,16 +1,20 @@
 {
   "snippets": {
-    "server": {
-      "description": "Express + WebSocket + SQLite server with SDK integration, tool approval, and persistence",
-      "localFile": "snippets/server.ts"
-    },
     "client": {
       "description": "React chat interface with WebSocket connection and tool approval UI",
       "localFile": "snippets/client.tsx"
+    }
+  },
+  "dependencies": {
+    "server": {
+      "skill": "claude-agent-sdk-ts",
+      "snippet": "ui-websocket-server-sqlite",
+      "description": "Server implementation from SDK skill"
     },
     "types": {
-      "description": "Shared TypeScript types for WebSocket messages and tool approval",
-      "localFile": "snippets/types.ts"
+      "skill": "claude-agent-sdk-ts",
+      "snippet": "ui-websocket-types",
+      "description": "Shared types from SDK skill"
     }
   }
 }

@@ -1,13 +1,5 @@
 {
   "snippets": {
-    "types": {
-      "description": "Shared TypeScript types for terminal chat messages and WebSocket protocol",
-      "localFile": "snippets/types.ts"
-    },
-    "server": {
-      "description": "Express + WebSocket server with Claude Agent SDK integration, tool approval, and SQLite persistence",
-      "localFile": "snippets/server.ts"
-    },
     "client": {
       "description": "React terminal-style chat component with input history and tool approval UI",
       "localFile": "snippets/client.tsx"
@@ -15,6 +7,18 @@
     "styles": {
       "description": "Dark terminal CSS theme with VS Code-inspired colors and monospace fonts",
       "localFile": "snippets/styles.css"
+    }
+  },
+  "dependencies": {
+    "server": {
+      "skill": "claude-agent-sdk-ts",
+      "snippet": "ui-websocket-server-sqlite",
+      "description": "Server implementation from SDK skill"
+    },
+    "types": {
+      "skill": "claude-agent-sdk-ts",
+      "snippet": "ui-websocket-types",
+      "description": "Shared types from SDK skill"
     }
   }
 }
