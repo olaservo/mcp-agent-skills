@@ -80,12 +80,19 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `tool-annotations` | Tool with semantic hints | Indicating read-only/destructive ops |
 | `tool-output-schema` | Tool with structured output | Typed responses |
 | `tool-agentic-sampling` | Agentic tool with LLM sampling loop | Server-driven AI workflows |
+| `tool-resource-links` | Tool returning resource_link blocks | Deferred resource resolution |
+| `tool-image` | Tool returning image content | Image responses |
+| `tool-elicitation` | Standalone elicitation request | User input forms |
+| `tool-sampling-simple` | Simple one-shot sampling | Quick LLM requests |
 | `task-tool-basic` | Task with multi-stage progress and cancellation | Async long-running operations |
 | `task-input-required` | Task with elicitation and cancellation | Operations needing user clarification |
 | `resource-static` | Static resource registration | Files, configs, static data |
 | `resource-template` | Dynamic URI template resource | Parameterized data access |
+| `resource-session` | Session-scoped temporary resource | Dynamic/computed data |
 | `prompt-basic` | Simple prompt | Basic user commands |
 | `prompt-args` | Prompt with arguments | Parameterized commands |
+| `prompt-completions` | Context-aware argument completions | Dependent argument values |
+| `prompt-resource` | Prompt with embedded resources | Resource-based prompts |
 
 ### 1.3 Check Client Compatibility
 
@@ -147,16 +154,24 @@ snippets/
 │   ├── echo.ts
 │   ├── trigger-long-running-operation.ts
 │   ├── get-annotated-message.ts
-│   └── get-structured-content.ts
+│   ├── get-structured-content.ts
+│   ├── agentic-sampling.ts
+│   ├── get-resource-links.ts
+│   ├── get-tiny-image.ts
+│   ├── trigger-elicitation-request.ts
+│   └── trigger-sampling-request.ts
 ├── tasks/                    # Task examples (SEP-1686)
 │   ├── task-tool-basic.ts
 │   └── task-input-required.ts
 ├── resources/                # Resource examples
 │   ├── files.ts
-│   └── templates.ts
+│   ├── templates.ts
+│   └── session.ts
 └── prompts/                  # Prompt examples
     ├── simple.ts
-    └── args.ts
+    ├── args.ts
+    ├── completions.ts
+    └── resource.ts
 ```
 
 **Copy snippets directly:**
@@ -265,6 +280,10 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 | `tool-annotations` | Tool with readOnlyHint, destructiveHint, idempotentHint |
 | `tool-output-schema` | Tool with structured output schema for typed responses |
 | `tool-agentic-sampling` | Agentic tool using sampling with tools - LLM executes server tools in a loop (MCP 2025-11-25) |
+| `tool-resource-links` | Tool returning resource_link content blocks for deferred resolution |
+| `tool-image` | Tool returning image content blocks (base64-encoded) |
+| `tool-elicitation` | Standalone elicitation request with schema-driven form (client capability check) |
+| `tool-sampling-simple` | Simple one-shot sampling request (client capability check) |
 
 ### Resources
 
@@ -272,6 +291,7 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 |------|-------------|
 | `resource-static` | Static resource from files or fixed data |
 | `resource-template` | Dynamic resource with URI template variables |
+| `resource-session` | Session-scoped temporary resources (not persisted) |
 
 ### Prompts
 
@@ -279,6 +299,8 @@ See: [Writing Tools for Agents](https://www.anthropic.com/engineering/writing-to
 |------|-------------|
 | `prompt-basic` | Simple prompt without arguments |
 | `prompt-args` | Prompt with required/optional arguments and auto-completion |
+| `prompt-completions` | Prompt with context-aware argument completions using completable() helper |
+| `prompt-resource` | Prompt with embedded resource references in messages |
 
 ---
 

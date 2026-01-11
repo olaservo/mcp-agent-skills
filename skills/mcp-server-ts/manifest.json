@@ -75,6 +75,48 @@
       "description": "Task with input_required status, elicitation, multi-stage progress, and cancellation",
       "localFile": "tasks/task-input-required.ts",
       "category": "tasks"
+    },
+    "tool-resource-links": {
+      "description": "Tool returning resource_link content blocks for deferred resolution",
+      "localFile": "tools/get-resource-links.ts",
+      "remoteFiles": ["tools/get-resource-links.ts"],
+      "category": "tools"
+    },
+    "tool-image": {
+      "description": "Tool returning image content blocks (base64-encoded)",
+      "localFile": "tools/get-tiny-image.ts",
+      "remoteFiles": ["tools/get-tiny-image.ts"],
+      "category": "tools"
+    },
+    "tool-elicitation": {
+      "description": "Standalone elicitation request with schema-driven form (client capability check)",
+      "localFile": "tools/trigger-elicitation-request.ts",
+      "remoteFiles": ["tools/trigger-elicitation-request.ts"],
+      "category": "tools"
+    },
+    "tool-sampling-simple": {
+      "description": "Simple one-shot sampling request (client capability check)",
+      "localFile": "tools/trigger-sampling-request.ts",
+      "remoteFiles": ["tools/trigger-sampling-request.ts"],
+      "category": "tools"
+    },
+    "prompt-completions": {
+      "description": "Prompt with context-aware argument completions using completable() helper",
+      "localFile": "prompts/completions.ts",
+      "remoteFiles": ["prompts/completions.ts"],
+      "category": "prompts"
+    },
+    "prompt-resource": {
+      "description": "Prompt with embedded resource references in messages",
+      "localFile": "prompts/resource.ts",
+      "remoteFiles": ["prompts/resource.ts"],
+      "category": "prompts"
+    },
+    "resource-session": {
+      "description": "Session-scoped temporary resources (not persisted)",
+      "localFile": "resources/session.ts",
+      "remoteFiles": ["resources/session.ts"],
+      "category": "resources"
     }
   }
 }
