@@ -355,6 +355,223 @@ for await (const msg of session.stream()) {
 
 ---
 
+## Chat Persistence Patterns
+
+### Choosing a Storage Backend
+
+```
+Need native-free deployment?
+  └─> Use JSONL (no compilation needed)
+
+Need complex queries (search, filtering)?
+  └─> Use SQLite
+
+Need simplicity for prototyping?
+  └─> Use JSONL
+```
+
+### Pattern: Session ID Extraction
+
+Always capture the SDK session ID from the init message for resume capability:
+
+```typescript
+for await (const msg of session.stream()) {
+  if (msg.type === 'system' && msg.subtype === 'init') {
+    // Save this ID to your database
+    await store.updateSessionId(chatId, msg.session_id!);
+  }
+}
+```
+
+### Pattern: Message Schema
+
+Store both content and tool call metadata:
+
+```typescript
+interface ChatMessage {
+  id: string;
+  chatId: string;
+  role: 'user' | 'assistant';
+  content: string;           // Text content
+  toolCalls?: unknown[];     // Tool use blocks for history display
+  timestamp: string;
+}
+```
+
+### Pattern: Resume Flow
+
+```typescript
+async function loadOrResumeChat(chatId: string) {
+  const chat = store.getChat(chatId);
+
+  if (chat?.sdkSessionId) {
+    try {
+      // Resume existing session
+      return unstable_v2_resumeSession(chat.sdkSessionId, { model: 'sonnet' });
+    } catch {
+      // Session expired, create new one
+      return unstable_v2_createSession({ model: 'sonnet' });
+    }
+  }
+
+  return unstable_v2_createSession({ model: 'sonnet' });
+}
+```
+
+---
+
+## Human-in-the-Loop Patterns
+
+### Pattern: Approval Hook
+
+Create a PreToolUse hook that pauses for user approval:
+
+```typescript
+function createApprovalHook(onApprovalNeeded: (request: ApprovalRequest) => Promise<boolean>) {
+  return {
+    matcher: 'Write|Edit|Bash',  // Tools requiring approval
+    hooks: [async (input): Promise<HookJSONOutput> => {
+      const approved = await onApprovalNeeded({
+        requestId: crypto.randomUUID(),
+        toolName: input.tool_name,
+        toolInput: input.tool_input,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (!approved) {
+        return { decision: 'block', stopReason: 'User rejected', continue: false };
+      }
+      return { continue: true };
+    }],
+  };
+}
+```
+
+### Pattern: Approval Manager with Timeout
+
+For WebSocket integration, use a manager that handles async approval:
+
+```typescript
+class ApprovalManager extends EventEmitter {
+  private pendingApprovals: Map<string, { resolve: Function; timeout: NodeJS.Timeout }>;
+
+  async requestApproval(request: ApprovalRequest): Promise<boolean> {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        this.pendingApprovals.delete(request.requestId);
+        resolve(false);  // Auto-reject on timeout
+      }, 60000);
+
+      this.pendingApprovals.set(request.requestId, { resolve, timeout });
+      this.emit('approval_needed', request);  // Send to UI
+    });
+  }
+
+  resolveApproval(requestId: string, approved: boolean): void {
+    const pending = this.pendingApprovals.get(requestId);
+    if (pending) {
+      clearTimeout(pending.timeout);
+      this.pendingApprovals.delete(requestId);
+      pending.resolve(approved);
+    }
+  }
+}
+```
+
+### Pattern: Auto-Approve Safe Tools
+
+Only require approval for dangerous operations:
+
+```typescript
+const SAFE_TOOLS = ['Read', 'Glob', 'Grep', 'WebSearch'];
+const DANGEROUS_TOOLS = ['Write', 'Edit', 'Bash', 'MultiEdit'];
+
+// Hook only matches dangerous tools
+matcher: DANGEROUS_TOOLS.join('|')
+```
+
+---
+
+## Tool History Tracking
+
+### Pattern: Extract Tool Events
+
+Process SDK messages to extract tool events for UI display:
+
+```typescript
+function extractToolEvents(msg: SDKMessage): ToolEvent[] {
+  const events: ToolEvent[] = [];
+
+  if (msg.type === 'assistant' && msg.message) {
+    for (const block of msg.message.content) {
+      if (block.type === 'tool_use') {
+        events.push({
+          type: 'tool_use',
+          id: block.id,
+          toolName: block.name,
+          toolInput: block.input,
+        });
+      }
+    }
+  }
+
+  // Tool results come in user messages
+  if (msg.type === 'user' && Array.isArray(msg.message?.content)) {
+    for (const block of msg.message.content) {
+      if (block.type === 'tool_result') {
+        events.push({
+          type: 'tool_result',
+          toolUseId: block.tool_use_id,
+          content: block.content,
+          isError: block.is_error,
+        });
+      }
+    }
+  }
+
+  return events;
+}
+```
+
+### Pattern: Format for Display
+
+Create human-readable summaries for common tools:
+
+```typescript
+function formatToolInput(toolName: string, input: unknown): string {
+  const obj = input as Record<string, unknown>;
+
+  switch (toolName) {
+    case 'Bash': return `$ ${obj.command}`;
+    case 'Read': return `Reading: ${obj.file_path}`;
+    case 'Write': return `Writing: ${obj.file_path}`;
+    case 'WebSearch': return `Searching: "${obj.query}"`;
+    default: return JSON.stringify(input).slice(0, 50);
+  }
+}
+```
+
+### Pattern: Pair Tool Calls with Results
+
+Track tool_use IDs to match them with their results:
+
+```typescript
+const toolUseMap = new Map<string, ToolUseEvent>();
+
+for (const event of events) {
+  if (event.type === 'tool_use') {
+    toolUseMap.set(event.id, event);
+  } else if (event.type === 'tool_result') {
+    const use = toolUseMap.get(event.toolUseId);
+    if (use) {
+      // Now you have the pair: use + event
+    }
+  }
+}
+```
+
+---
+
 ## Application Integration Patterns
 
 ### Pattern: Express HTTP Endpoint

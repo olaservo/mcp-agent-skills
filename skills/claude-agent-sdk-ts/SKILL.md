@@ -117,6 +117,23 @@ Need to validate tool inputs?
   └─> Use PreToolUse hooks for validation
 ```
 
+### Building a Chat UI?
+
+```
+Need to persist chat history?
+  ├─> Want a database → persistence-sqlite
+  └─> Want simple files → persistence-jsonl
+
+Need user approval for tool calls?
+  └─> Use ui-tool-approval (PreToolUse hook with WebSocket)
+
+Want to show tool call activity?
+  └─> Use ui-tool-history (extract events from stream)
+
+Need everything integrated?
+  └─> Use ui-websocket-chat (complete example)
+```
+
 ---
 
 ## Phase 1: Research
@@ -157,6 +174,11 @@ Review the snippet catalog below to identify patterns that match your needs:
 | `pattern-subagent` | Task tool orchestration | Multi-agent systems |
 | `pattern-task-filesystem` | File-based subagent definitions | Production multi-agent |
 | `pattern-self-improving` | Agents that persist their own skills | Evolving capabilities |
+| `persistence-sqlite` | SQLite chat storage with session resume | Database persistence |
+| `persistence-jsonl` | JSONL file-based chat storage | Lightweight persistence |
+| `ui-tool-approval` | PreToolUse hook with WebSocket approval | Human-in-the-loop |
+| `ui-tool-history` | Tool event extraction for UI display | Activity tracking |
+| `ui-websocket-chat` | Complete WebSocket chat session | Full-featured chat UI |
 
 ### 1.3 Check SDK Version
 
@@ -234,11 +256,18 @@ snippets/
 │   ├── settings-sources.ts
 │   ├── model-selection.ts
 │   └── working-directory.ts
-└── patterns/                 # Advanced patterns
-    ├── message-queue.ts
-    ├── ai-client-wrapper.ts
-    ├── websocket-session.ts
-    └── subagent-task.ts
+├── patterns/                 # Advanced patterns
+│   ├── message-queue.ts
+│   ├── ai-client-wrapper.ts
+│   ├── websocket-session.ts
+│   └── subagent-task.ts
+├── persistence/              # Chat persistence
+│   ├── chat-store-sqlite.ts
+│   └── chat-store-jsonl.ts
+└── ui/                       # UI integration
+    ├── tool-approval-hook.ts
+    ├── tool-history-stream.ts
+    └── websocket-chat-session.ts
 ```
 
 **Copy snippets directly:**
@@ -368,6 +397,21 @@ for await (const message of q) {
 | `pattern-subagent` | Task tool pattern for subagent orchestration |
 | `pattern-task-filesystem` | File-based subagent definitions in .claude/agents/*.md |
 | `pattern-self-improving` | Agents that develop, test, and persist their own reusable skills |
+
+### Chat Persistence
+
+| Name | Description |
+|------|-------------|
+| `persistence-sqlite` | SQLite chat storage with session ID tracking for resume |
+| `persistence-jsonl` | JSONL file-based storage, no native dependencies |
+
+### UI Integration
+
+| Name | Description |
+|------|-------------|
+| `ui-tool-approval` | PreToolUse hook that pauses for WebSocket-based user approval |
+| `ui-tool-history` | Extract and format tool events for UI display |
+| `ui-websocket-chat` | Complete WebSocket chat session with persistence and approval |
 
 ---
 

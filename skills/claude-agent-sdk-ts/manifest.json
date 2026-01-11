@@ -121,6 +121,31 @@
       "description": "Agents that develop, test, and persist their own reusable skills",
       "localFile": "snippets/patterns/self-improving-agent.ts",
       "category": "patterns"
+    },
+    "persistence-sqlite": {
+      "description": "SQLite chat storage with session ID tracking for resume",
+      "localFile": "snippets/persistence/chat-store-sqlite.ts",
+      "category": "persistence"
+    },
+    "persistence-jsonl": {
+      "description": "JSONL file-based chat storage, no native dependencies",
+      "localFile": "snippets/persistence/chat-store-jsonl.ts",
+      "category": "persistence"
+    },
+    "ui-tool-approval": {
+      "description": "PreToolUse hook that pauses for WebSocket-based user approval",
+      "localFile": "snippets/ui/tool-approval-hook.ts",
+      "category": "ui"
+    },
+    "ui-tool-history": {
+      "description": "Extract and format tool events for UI display",
+      "localFile": "snippets/ui/tool-history-stream.ts",
+      "category": "ui"
+    },
+    "ui-websocket-chat": {
+      "description": "Complete WebSocket chat session with persistence and approval",
+      "localFile": "snippets/ui/websocket-chat-session.ts",
+      "category": "ui"
     }
   }
 }
