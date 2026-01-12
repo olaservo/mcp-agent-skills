@@ -216,98 +216,22 @@ async function callToolWithConfirmation(client: Client, toolName: string, args: 
 
 Content items (in tool results, resources, and prompts) may include annotations that help clients decide how to display or process the content.
 
-### Annotation Fields
-
 | Field | Type | Description |
 |-------|------|-------------|
 | `audience` | `Role[]` | Who should see: `["user"]`, `["assistant"]`, or both |
 | `priority` | `number` | Importance: 0.0 (optional) to 1.0 (required) |
 | `lastModified` | `string` | ISO 8601 timestamp |
 
-### Reading Content Annotations
+**Default behavior when annotations are missing:**
+- No `audience`: Include for both user and assistant
+- No `priority`: Treat as 0.5 (medium importance)
+- No `lastModified`: No timestamp available
 
-```typescript
-const result = await client.callTool({ name: "my-tool", arguments: {} });
-
-for (const item of result.content) {
-  const annotations = item.annotations;
-
-  if (annotations) {
-    // Check audience
-    const forUser = annotations.audience?.includes("user") ?? true;
-    const forAssistant = annotations.audience?.includes("assistant") ?? true;
-
-    // Check priority (default to medium if not specified)
-    const priority = annotations.priority ?? 0.5;
-
-    // Check modification time
-    const lastModified = annotations.lastModified
-      ? new Date(annotations.lastModified)
-      : null;
-
-    console.log(`Content for user: ${forUser}, priority: ${priority}`);
-  }
-}
-```
-
-### Filtering by Audience
-
-```typescript
-type Role = "user" | "assistant";
-
-function filterContentByAudience(
-  content: Content[],
-  audience: Role
-): Content[] {
-  return content.filter((item) => {
-    // If no audience specified, include for everyone
-    if (!item.annotations?.audience) return true;
-    return item.annotations.audience.includes(audience);
-  });
-}
-
-// Show only user-facing content in UI
-const result = await client.callTool({ name: "search", arguments: { query: "test" } });
-const userContent = filterContentByAudience(result.content, "user");
-
-// Include only assistant content in LLM context
-const assistantContent = filterContentByAudience(result.content, "assistant");
-```
-
-### Sorting by Priority
-
-```typescript
-function sortByPriority(content: Content[]): Content[] {
-  return [...content].sort((a, b) => {
-    const priorityA = a.annotations?.priority ?? 0.5;
-    const priorityB = b.annotations?.priority ?? 0.5;
-    return priorityB - priorityA; // Highest priority first
-  });
-}
-
-// When context is limited, include high-priority content first
-const sorted = sortByPriority(result.content);
-const topContent = sorted.slice(0, 5); // Take top 5 by priority
-```
-
-### Displaying Modification Times
-
-```typescript
-function formatLastModified(item: Content): string | null {
-  if (!item.annotations?.lastModified) return null;
-
-  const date = new Date(item.annotations.lastModified);
-  return date.toLocaleString();
-}
-
-// Show "Last updated: Jan 12, 2025, 3:00 PM" in UI
-for (const item of result.content) {
-  const modified = formatLastModified(item);
-  if (modified) {
-    console.log(`Last updated: ${modified}`);
-  }
-}
-```
+**Common use cases:**
+- Filter content by audience before displaying to user or sending to LLM
+- Sort by priority when context window is limited
+- Sort by recency to show most recent content first
+- Display "last updated" timestamps in UI
 
 ---
 

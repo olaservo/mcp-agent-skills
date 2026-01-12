@@ -55,6 +55,11 @@
       "localFile": "features/completions.ts",
       "category": "features"
     },
+    "annotations": {
+      "description": "Filter, sort, and display content with audience, priority, and timestamp annotations",
+      "localFile": "features/annotations.ts",
+      "category": "features"
+    },
     "tasks": {
       "description": "Task support for long-running tool operations with progress streaming",
       "localFile": "capabilities/tasks.ts",

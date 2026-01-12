@@ -248,20 +248,6 @@ Content annotations provide hints to clients about how to use or display content
 | `priority` | `number` | Importance from 0.0 (optional) to 1.0 (required) |
 | `lastModified` | `string` | ISO 8601 timestamp (e.g., `"2025-01-12T15:00:58Z"`) |
 
-**Example: Resource with annotations**
-```json
-{
-  "uri": "file:///project/README.md",
-  "name": "README.md",
-  "mimeType": "text/markdown",
-  "annotations": {
-    "audience": ["user"],
-    "priority": 0.8,
-    "lastModified": "2025-01-12T15:00:58Z"
-  }
-}
-```
-
 **When to use each field:**
 
 | Field | Use Case |
@@ -273,30 +259,6 @@ Content annotations provide hints to clients about how to use or display content
 | `priority: 0.5` | Normal importance |
 | `priority: 0.0` | Optional/supplementary content, can be dropped if context limited |
 | `lastModified` | Enable sorting by recency, show "last updated" in UI |
-
-**Example: Tool result with annotated content items**
-```typescript
-return {
-  content: [
-    {
-      type: "text",
-      text: "Operation completed successfully",
-      annotations: {
-        priority: 0.9,
-        audience: ["user", "assistant"]
-      }
-    },
-    {
-      type: "text",
-      text: "Debug: processed 150 records in 2.3s",
-      annotations: {
-        priority: 0.2,
-        audience: ["assistant"]  // Technical detail for LLM context
-      }
-    }
-  ]
-};
-```
 
 ---
 
