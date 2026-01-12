@@ -134,6 +134,84 @@ if (instructions) {
 
 ---
 
+## Tool Annotations
+
+Tools may include annotations that provide hints about their behavior. Use these for UI/UX decisions like showing warning icons or confirmation dialogs.
+
+### Reading Annotations
+
+```typescript
+const { tools } = await client.listTools();
+
+for (const tool of tools) {
+  const annotations = tool.annotations;
+
+  if (annotations) {
+    console.log(`Tool: ${tool.name}`);
+    console.log(`  Read-only: ${annotations.readOnlyHint ?? false}`);
+    console.log(`  Destructive: ${annotations.destructiveHint ?? true}`);
+    console.log(`  Idempotent: ${annotations.idempotentHint ?? false}`);
+    console.log(`  Open world: ${annotations.openWorldHint ?? true}`);
+  }
+}
+```
+
+### Default Values
+
+If annotations are not provided, assume the most dangerous behavior:
+
+| Annotation | Default | Meaning |
+|------------|---------|---------|
+| `readOnlyHint` | `false` | Assumes tool modifies environment |
+| `destructiveHint` | `true` | Assumes tool is destructive |
+| `idempotentHint` | `false` | Assumes tool is NOT safe to retry |
+| `openWorldHint` | `true` | Assumes tool interacts with external systems |
+
+### UI/UX Patterns
+
+```typescript
+function getToolWarningLevel(tool: Tool): "safe" | "caution" | "danger" {
+  const annotations = tool.annotations;
+
+  // No annotations = assume dangerous
+  if (!annotations) return "danger";
+
+  // Read-only tools are safe
+  if (annotations.readOnlyHint) return "safe";
+
+  // Destructive, non-idempotent tools need confirmation
+  if (annotations.destructiveHint && !annotations.idempotentHint) {
+    return "danger";
+  }
+
+  // Non-destructive or idempotent tools are lower risk
+  if (!annotations.destructiveHint || annotations.idempotentHint) {
+    return "caution";
+  }
+
+  return "danger";
+}
+
+// Example: Show confirmation for dangerous tools
+async function callToolWithConfirmation(client: Client, toolName: string, args: object) {
+  const { tools } = await client.listTools();
+  const tool = tools.find(t => t.name === toolName);
+
+  if (tool && getToolWarningLevel(tool) === "danger") {
+    const confirmed = await promptUser(`Tool "${toolName}" may be destructive. Continue?`);
+    if (!confirmed) return null;
+  }
+
+  return client.callTool({ name: toolName, arguments: args });
+}
+```
+
+### Security Warning
+
+> **Important:** Tool annotations are **hints only**. Clients MUST NOT make security decisions based on annotations from untrusted servers. A malicious server could mark a destructive tool as `readOnlyHint: true`. Always verify server trustworthiness independently.
+
+---
+
 ## Server Instructions
 
 MCP servers can provide optional instructions that describe how to use their tools effectively. Instructions are returned during the initialization handshake and can improve LLM tool usage when included in system prompts.

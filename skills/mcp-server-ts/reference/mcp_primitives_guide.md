@@ -43,14 +43,51 @@ Tools enable models to interact with external systems - querying databases, call
 | `outputSchema` | No | JSON Schema for structured output |
 | `annotations` | No | Behavioral hints |
 
-### Annotations
+### Tool Annotations
+
+Tool annotations provide hints to clients about tool behavior. These are **hints only** - not guaranteed to be accurate.
 
 ```typescript
 annotations: {
   readOnlyHint: true,      // Does not modify environment
   destructiveHint: false,  // Does not perform destructive updates
   idempotentHint: true,    // Safe to call multiple times with same result
-  openWorldHint: true      // Interacts with external entities
+  openWorldHint: false     // Does not interact with external entities
+}
+```
+
+**Default Values (if not specified):**
+
+| Annotation | Default | Meaning |
+|------------|---------|---------|
+| `readOnlyHint` | `false` | Assumes tool DOES modify its environment |
+| `destructiveHint` | `true` | Assumes tool IS destructive |
+| `idempotentHint` | `false` | Assumes tool is NOT safe to retry |
+| `openWorldHint` | `true` | Assumes tool interacts with external systems |
+
+> **Important:** The defaults assume the most dangerous behavior. Servers should explicitly set annotations to indicate safer behavior.
+
+**Conditional Semantics:**
+
+- `destructiveHint` and `idempotentHint` are only meaningful when `readOnlyHint == false`
+- If `readOnlyHint: true`, the other hints are irrelevant (read-only tools can't be destructive)
+
+**Example: Read-only tool**
+```typescript
+annotations: {
+  readOnlyHint: true,       // Only reads data
+  openWorldHint: true       // Queries external API
+}
+// destructiveHint and idempotentHint omitted - not meaningful for read-only
+```
+
+**Example: Destructive tool**
+```typescript
+annotations: {
+  readOnlyHint: false,      // Modifies environment
+  destructiveHint: true,    // Deletes data
+  idempotentHint: false,    // Each call has additional effect
+  openWorldHint: false      // Only affects local state
 }
 ```
 
