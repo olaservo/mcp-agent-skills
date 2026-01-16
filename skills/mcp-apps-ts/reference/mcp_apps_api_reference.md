@@ -635,6 +635,98 @@ appBridge.sendToolCancelled({
 });
 ```
 
+#### `sendToolInputPartial()`
+
+Sends streaming partial tool arguments to the app.
+
+```typescript
+appBridge.sendToolInputPartial({
+  arguments: Record<string, any>;  // Partial/incomplete arguments
+});
+```
+
+#### `setHostContext()`
+
+Updates the host context and notifies the app of changes. Only sends notification for changed fields.
+
+```typescript
+appBridge.setHostContext({
+  theme: "dark",
+  availableDisplayModes: ["inline", "fullscreen"],
+});
+```
+
+#### `sendHostContextChange()`
+
+Low-level method to send context changes directly. Use `setHostContext()` for automatic change detection.
+
+```typescript
+appBridge.sendHostContextChange({
+  theme: "dark",
+});
+```
+
+#### `teardownResource()`
+
+Requests graceful shutdown of the app. Call before unmounting iframe.
+
+```typescript
+await appBridge.teardownResource({});
+// Safe to remove iframe after this resolves
+```
+
+#### `getAppCapabilities()`
+
+Returns the app's capabilities discovered during initialization.
+
+```typescript
+const caps = appBridge.getAppCapabilities();
+if (caps?.tools) {
+  console.log("App provides tools");
+}
+```
+
+#### `getAppVersion()`
+
+Returns the app's implementation info (name and version).
+
+```typescript
+const appInfo = appBridge.getAppVersion();
+console.log(`App: ${appInfo?.name} v${appInfo?.version}`);
+```
+
+#### `getCapabilities()`
+
+Returns the host capabilities passed to the constructor.
+
+```typescript
+const hostCaps = appBridge.getCapabilities();
+```
+
+#### `sendToolListChanged()`
+
+Notifies app that the server's tool list has changed.
+
+```typescript
+appBridge.sendToolListChanged();
+```
+
+#### `sendResourceListChanged()`
+
+Notifies app that the server's resource list has changed.
+
+```typescript
+appBridge.sendResourceListChanged();
+```
+
+#### `sendPromptListChanged()`
+
+Notifies app that the server's prompt list has changed.
+
+```typescript
+appBridge.sendPromptListChanged();
+```
+
 ### Event Handlers
 
 Register handlers BEFORE calling `connect()`.
@@ -692,6 +784,96 @@ appBridge.onsizechange = async ({ width, height }) => {
 };
 ```
 
+#### `onrequestdisplaymode`
+
+Called when app requests a display mode change (fullscreen, pip, inline).
+
+```typescript
+appBridge.onrequestdisplaymode = async ({ mode }, extra) => {
+  const availableModes = hostContext.availableDisplayModes ?? ["inline"];
+  if (availableModes.includes(mode)) {
+    currentDisplayMode = mode;
+    return { mode };
+  }
+  return { mode: currentDisplayMode };  // Return current if requested not available
+};
+```
+
+#### `onupdatemodelcontext`
+
+Called when app updates the model context with state information.
+
+```typescript
+appBridge.onupdatemodelcontext = async ({ content, structuredContent }, extra) => {
+  modelContext = { content, structuredContent, timestamp: Date.now() };
+  return {};
+};
+```
+
+#### `oncalltool`
+
+Called when app calls a server tool. Typically forwards to MCP server.
+
+```typescript
+appBridge.oncalltool = async ({ name, arguments: args }, extra) => {
+  return mcpClient.request(
+    { method: "tools/call", params: { name, arguments: args } },
+    CallToolResultSchema,
+    { signal: extra.signal }
+  );
+};
+```
+
+#### `onlistresources`
+
+Called when app requests the resource list.
+
+```typescript
+appBridge.onlistresources = async (params, extra) => {
+  return mcpClient.request(
+    { method: "resources/list", params },
+    ListResourcesResultSchema
+  );
+};
+```
+
+#### `onreadresource`
+
+Called when app reads a resource.
+
+```typescript
+appBridge.onreadresource = async ({ uri }, extra) => {
+  return mcpClient.request(
+    { method: "resources/read", params: { uri } },
+    ReadResourceResultSchema
+  );
+};
+```
+
+#### `onlistprompts`
+
+Called when app requests the prompt list.
+
+```typescript
+appBridge.onlistprompts = async (params, extra) => {
+  return mcpClient.request(
+    { method: "prompts/list", params },
+    ListPromptsResultSchema
+  );
+};
+```
+
+#### `onsandboxready`
+
+Called when sandbox proxy is ready to receive HTML content. Internal use.
+
+```typescript
+appBridge.onsandboxready = async () => {
+  const resource = await mcpClient.readResource({ uri: "ui://my-app" });
+  appBridge.sendSandboxResourceReady({ html: resource.contents[0].text });
+};
+```
+
 ---
 
 ## Helper Functions
@@ -706,6 +888,24 @@ import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 const uri = getToolUiResourceUri(tool: Tool);
 // Returns: string | undefined
+```
+
+Supports both nested format (`_meta.ui.resourceUri`) and deprecated flat format (`_meta["ui/resourceUri"]`).
+
+### `buildAllowAttribute()`
+
+Builds iframe `allow` attribute string from permissions.
+
+```typescript
+import { buildAllowAttribute } from "@modelcontextprotocol/ext-apps/app-bridge";
+
+const allow = buildAllowAttribute({
+  microphone: {},
+  clipboardWrite: {},
+});
+// Returns: "microphone; clipboard-write"
+
+iframe.setAttribute("allow", allow);
 ```
 
 ---

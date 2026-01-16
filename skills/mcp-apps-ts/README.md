@@ -36,6 +36,13 @@ This skill tracks the [ext-apps repository](https://github.com/modelcontextproto
 
 ## Changelog
 
+### 2026-01-16 (Audit Fix) - AppBridge documentation gaps
+
+**Added to API Reference:**
+- AppBridge methods: `getAppCapabilities`, `getAppVersion`, `getCapabilities`, `setHostContext`, `sendHostContextChange`, `sendToolInputPartial`, `teardownResource`, `sendToolListChanged`, `sendResourceListChanged`, `sendPromptListChanged`
+- AppBridge handlers: `onrequestdisplaymode`, `onupdatemodelcontext`, `oncalltool`, `onlistresources`, `onreadresource`, `onlistprompts`, `onsandboxready`
+- Helper function: `buildAllowAttribute`
+
 ### 2026-01-16 - Updated for ext-apps v0.4.1
 
 **New Features Documented:**
