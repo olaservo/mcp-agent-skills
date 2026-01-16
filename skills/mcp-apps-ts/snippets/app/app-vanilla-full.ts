@@ -89,6 +89,37 @@ app.ontoolresult = (result: CallToolResult) => {
 };
 
 /**
+ * Called when tool execution is cancelled.
+ * Show appropriate feedback to the user.
+ */
+app.ontoolcancelled = (params) => {
+  log.warn("Tool call cancelled:", params.reason);
+  outputEl.textContent = `[Cancelled: ${params.reason ?? "Operation was cancelled"}]`;
+};
+
+/**
+ * Called when host context changes (theme, locale, styles, etc.).
+ * Use this to adapt your UI to the host's appearance.
+ */
+app.onhostcontextchanged = (params) => {
+  log.info("Host context changed:", params);
+
+  // Handle theme changes
+  if (params.theme) {
+    document.body.classList.toggle("dark-theme", params.theme === "dark");
+    log.info("Theme changed to:", params.theme);
+  }
+
+  // Handle style variable changes
+  if (params.styles?.variables) {
+    // Apply CSS custom properties from host
+    for (const [key, value] of Object.entries(params.styles.variables)) {
+      document.documentElement.style.setProperty(key, value);
+    }
+  }
+};
+
+/**
  * Called on any error.
  */
 app.onerror = (error: Error) => {
@@ -170,8 +201,41 @@ document.getElementById("refresh-btn")?.addEventListener("click", async () => {
 });
 
 // ============================================================
+// HOST CONTEXT - Access theme, styles, safe areas
+// ============================================================
+
+// After connection, you can access host context
+function applyInitialContext() {
+  const context = app.getHostContext();
+  if (!context) return;
+
+  log.info("Initial host context:", context);
+
+  // Apply theme
+  if (context.theme) {
+    document.body.classList.toggle("dark-theme", context.theme === "dark");
+  }
+
+  // Apply safe area insets (for fullscreen/pip modes)
+  if (context.safeAreaInsets) {
+    document.body.style.paddingTop = `${context.safeAreaInsets.top ?? 0}px`;
+    document.body.style.paddingRight = `${context.safeAreaInsets.right ?? 0}px`;
+    document.body.style.paddingBottom = `${context.safeAreaInsets.bottom ?? 0}px`;
+    document.body.style.paddingLeft = `${context.safeAreaInsets.left ?? 0}px`;
+  }
+
+  // Log available display modes
+  if (context.availableDisplayModes) {
+    log.info("Available display modes:", context.availableDisplayModes);
+  }
+}
+
+// ============================================================
 // CONNECT - Start the app
 // ============================================================
 
 // Connect to the host - this must be called after registering handlers
-app.connect();
+app.connect().then(() => {
+  log.info("Connected to host");
+  applyInitialContext();
+});

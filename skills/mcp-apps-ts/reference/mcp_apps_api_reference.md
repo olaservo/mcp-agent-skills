@@ -1,12 +1,12 @@
 # MCP Apps API Reference
 
-Complete API reference for the MCP Apps SDK (`@modelcontextprotocol/ext-apps`).
+Complete API reference for the MCP Apps SDK (`@modelcontextprotocol/ext-apps`) v0.4.x.
 
 ## Package Exports
 
 | Import Path | Purpose |
 |-------------|---------|
-| `@modelcontextprotocol/ext-apps` | Main SDK: `App` class |
+| `@modelcontextprotocol/ext-apps` | Main SDK: `App` class, types, style utilities |
 | `@modelcontextprotocol/ext-apps/server` | Server helpers and constants |
 | `@modelcontextprotocol/ext-apps/react` | React hooks |
 | `@modelcontextprotocol/ext-apps/app-bridge` | Host integration |
@@ -20,7 +20,7 @@ Complete API reference for the MCP Apps SDK (`@modelcontextprotocol/ext-apps`).
 Registers an MCP tool with UI metadata.
 
 ```typescript
-import { registerAppTool, RESOURCE_URI_META_KEY } from "@modelcontextprotocol/ext-apps/server";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 
 registerAppTool(
   server: McpServer,
@@ -28,14 +28,31 @@ registerAppTool(
   options: {
     title?: string;
     description: string;
-    inputSchema: object;
+    inputSchema?: object;
     outputSchema?: object;
-    _meta?: {
-      [RESOURCE_URI_META_KEY]: string;  // ui:// URI
+    annotations?: ToolAnnotations;
+    _meta: {
+      ui: {
+        resourceUri: string;         // ui:// URI (required)
+        visibility?: ("model" | "app")[];  // Who can see/call this tool
+      };
     };
   },
   handler: () => Promise<CallToolResult>
 );
+```
+
+**Tool Visibility:**
+
+```typescript
+// Default: visible to both model and app
+_meta: { ui: { resourceUri: "ui://cart/widget.html" } }
+
+// App-only: hidden from model, only callable by the UI
+_meta: { ui: { resourceUri: "ui://cart/widget.html", visibility: ["app"] } }
+
+// Explicit both (same as default)
+_meta: { ui: { resourceUri: "ui://cart/widget.html", visibility: ["model", "app"] } }
 ```
 
 ### `registerAppResource()`
@@ -50,7 +67,16 @@ registerAppResource(
   name: string,              // Resource name
   uri: string,               // ui:// URI
   options: {
-    mimeType: typeof RESOURCE_MIME_TYPE;  // "text/html;profile=mcp-app"
+    description?: string;
+    mimeType?: string;       // Defaults to RESOURCE_MIME_TYPE
+    _meta?: {
+      ui?: {
+        csp?: {
+          connectDomains?: string[];   // Allowed for fetch/WebSocket
+          resourceDomains?: string[];  // Allowed for scripts/styles/images
+        };
+      };
+    };
   },
   handler: () => Promise<ReadResourceResult>
 );
@@ -60,7 +86,7 @@ registerAppResource(
 
 ```typescript
 import {
-  RESOURCE_URI_META_KEY,  // Key for _meta.ui.resourceUri
+  RESOURCE_URI_META_KEY,  // "ui/resourceUri"
   RESOURCE_MIME_TYPE      // "text/html;profile=mcp-app"
 } from "@modelcontextprotocol/ext-apps/server";
 ```
@@ -76,10 +102,16 @@ The main class for building MCP App UIs.
 ```typescript
 import { App } from "@modelcontextprotocol/ext-apps";
 
-const app = new App({
-  name: string;     // App name
-  version: string;  // App version (semver)
-});
+const app = new App(
+  appInfo: {
+    name: string;     // App name
+    version: string;  // App version (semver)
+  },
+  capabilities?: McpUiAppCapabilities,  // Optional capabilities
+  options?: {
+    autoResize?: boolean;  // Auto-report size changes (default: true)
+  }
+);
 ```
 
 ### Methods
@@ -89,10 +121,10 @@ const app = new App({
 Connects to the host. Must be called after registering handlers.
 
 ```typescript
-app.connect();
+await app.connect();
 // or with explicit transport:
 import { PostMessageTransport } from "@modelcontextprotocol/ext-apps";
-app.connect(new PostMessageTransport(window.parent));
+await app.connect(new PostMessageTransport(window.parent, window.parent));
 ```
 
 #### `callServerTool()`
@@ -131,14 +163,28 @@ const response = await app.sendMessage(
 
 #### `sendLog()`
 
-Sends a log entry to the host.
+Sends a log entry to the host for debugging/telemetry.
 
 ```typescript
 await app.sendLog({
   level: "debug" | "info" | "warning" | "error";
   data: string;
+  logger?: string;  // Optional logger name
 });
 ```
+
+#### `updateModelContext()`
+
+Updates the host's model context with app state. Unlike `sendLog`, this is intended to be available to the model in future reasoning.
+
+```typescript
+await app.updateModelContext({
+  content?: Array<{ type: "text"; text: string }>;
+  structuredContent?: any;
+});
+```
+
+The host will typically defer sending the context to the model until the next user message. Each call overwrites any previous context update.
 
 #### `openLink()`
 
@@ -152,17 +198,102 @@ const response = await app.openLink({
 // Returns: { isError?: boolean }
 ```
 
+#### `requestDisplayMode()`
+
+Requests a change to the display mode (fullscreen, inline, pip).
+
+```typescript
+const result = await app.requestDisplayMode({
+  mode: "inline" | "fullscreen" | "pip";
+});
+
+// Returns: { mode: string }  // The actual mode that was set
+```
+
+Check available modes before requesting:
+
+```typescript
+const context = app.getHostContext();
+if (context?.availableDisplayModes?.includes("fullscreen")) {
+  await app.requestDisplayMode({ mode: "fullscreen" });
+}
+```
+
+#### `sendSizeChanged()`
+
+Manually notifies the host of UI size changes.
+
+```typescript
+app.sendSizeChanged({
+  width: number;
+  height: number;
+});
+```
+
+Note: If `autoResize` is enabled (default), this is called automatically.
+
+#### `setupSizeChangedNotifications()`
+
+Sets up automatic size change notifications using ResizeObserver. Called automatically by `connect()` if `autoResize` is true.
+
+```typescript
+const cleanup = app.setupSizeChangedNotifications();
+// Later: cleanup() to disconnect the observer
+```
+
+#### `getHostCapabilities()`
+
+Returns the host's capabilities discovered during initialization.
+
+```typescript
+const caps = app.getHostCapabilities();
+if (caps?.serverTools) {
+  console.log("Host supports server tool calls");
+}
+```
+
+#### `getHostVersion()`
+
+Returns the host's implementation info (name and version).
+
+```typescript
+const host = app.getHostVersion();
+console.log(`Connected to ${host?.name} v${host?.version}`);
+```
+
+#### `getHostContext()`
+
+Returns the host context including theme, locale, styles, and more.
+
+```typescript
+const context = app.getHostContext();
+// Returns: McpUiHostContext | undefined
+```
+
 ### Event Handlers
 
 Register handlers BEFORE calling `connect()`.
 
+> **Warning:** Handlers silently overwrite each other. If you need multiple listeners for the same event, use `setNotificationHandler()` directly and manage your own dispatch.
+
 #### `ontoolinput`
 
-Called when tool input arguments are received.
+Called when complete tool input arguments are received.
 
 ```typescript
 app.ontoolinput = (params: { arguments: Record<string, any> }) => {
   console.log("Tool input:", params.arguments);
+};
+```
+
+#### `ontoolinputpartial`
+
+Called as the host streams partial tool arguments during tool call initialization.
+
+```typescript
+app.ontoolinputpartial = (params: { arguments: Record<string, any> }) => {
+  console.log("Partial args:", params.arguments);
+  // Update UI progressively as arguments stream in
 };
 ```
 
@@ -178,13 +309,41 @@ app.ontoolresult = (result: CallToolResult) => {
 };
 ```
 
+#### `ontoolcancelled`
+
+Called when tool execution was cancelled.
+
+```typescript
+app.ontoolcancelled = (params: { reason?: string }) => {
+  console.log("Tool cancelled:", params.reason);
+  showCancelledMessage(params.reason ?? "Operation was cancelled");
+};
+```
+
+#### `onhostcontextchanged`
+
+Called when the host's context changes (theme, locale, styles, etc.).
+
+```typescript
+app.onhostcontextchanged = (params: Partial<McpUiHostContext>) => {
+  if (params.theme === "dark") {
+    document.body.classList.add("dark-theme");
+  } else if (params.theme === "light") {
+    document.body.classList.remove("dark-theme");
+  }
+};
+```
+
+Note: The params are automatically merged into the internal host context before your callback runs.
+
 #### `onteardown`
 
 Called when the app is being destroyed. Return a promise for async cleanup.
 
 ```typescript
 app.onteardown = async () => {
-  // Cleanup resources
+  await saveState();
+  closeConnections();
   return {};
 };
 ```
@@ -196,6 +355,29 @@ Called on errors.
 ```typescript
 app.onerror = (error: Error) => {
   console.error("App error:", error);
+};
+```
+
+#### `oncalltool`
+
+Called when the host requests this app to execute a tool (app-provided tools).
+
+```typescript
+app.oncalltool = async (params: { name: string; arguments?: any }) => {
+  if (params.name === "greet") {
+    return { content: [{ type: "text", text: `Hello, ${params.arguments?.name}!` }] };
+  }
+  throw new Error(`Unknown tool: ${params.name}`);
+};
+```
+
+#### `onlisttools`
+
+Called when the host requests a list of tools this app provides.
+
+```typescript
+app.onlisttools = async () => {
+  return { tools: ["greet", "calculate", "convert"] };
 };
 ```
 
@@ -211,37 +393,167 @@ React hook for managing App lifecycle.
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 
 function MyComponent() {
-  const { app, error } = useApp({
+  const { app, isConnected, error } = useApp({
     appInfo: {
       name: string;
       version: string;
     },
-    capabilities?: {},
+    capabilities: McpUiAppCapabilities;
     onAppCreated?: (app: App) => void;  // Register handlers here
   });
 
   if (error) return <div>Error: {error.message}</div>;
-  if (!app) return <div>Connecting...</div>;
+  if (!isConnected) return <div>Connecting...</div>;
 
   return <MyAppUI app={app} />;
 }
 ```
 
-**Example with handlers:**
+**Example with all handlers:**
 
 ```typescript
-const { app, error } = useApp({
+const { app, isConnected, error } = useApp({
   appInfo: { name: "My App", version: "1.0.0" },
+  capabilities: {},
   onAppCreated: (app) => {
-    app.ontoolresult = async (result) => {
-      setResult(result);
-    };
-    app.ontoolinput = async (input) => {
-      console.log("Input:", input);
-    };
+    app.ontoolresult = (result) => setResult(result);
+    app.ontoolinput = (input) => console.log("Input:", input);
+    app.ontoolcancelled = (params) => console.log("Cancelled:", params.reason);
+    app.onhostcontextchanged = (params) => setHostContext(prev => ({ ...prev, ...params }));
     app.onerror = console.error;
   },
 });
+```
+
+### `useHostStyleVariables()`
+
+Applies host style variables and theme as CSS custom properties.
+
+```typescript
+import { useHostStyleVariables } from "@modelcontextprotocol/ext-apps/react";
+
+function MyApp() {
+  const { app } = useApp({ appInfo, capabilities: {} });
+
+  // Apply host styles - pass initial context for immediate application
+  useHostStyleVariables(app, app?.getHostContext());
+
+  return (
+    <div style={{ background: 'var(--color-background-primary)' }}>
+      Hello!
+    </div>
+  );
+}
+```
+
+### `useHostFonts()`
+
+Applies host fonts from CSS.
+
+```typescript
+import { useHostFonts } from "@modelcontextprotocol/ext-apps/react";
+
+function MyApp() {
+  const { app } = useApp({ appInfo, capabilities: {} });
+
+  useHostFonts(app, app?.getHostContext());
+
+  return (
+    <div style={{ fontFamily: 'var(--font-sans)' }}>
+      Hello!
+    </div>
+  );
+}
+```
+
+### `useHostStyles()`
+
+Convenience hook that combines `useHostStyleVariables` and `useHostFonts`.
+
+```typescript
+import { useHostStyles } from "@modelcontextprotocol/ext-apps/react";
+
+function MyApp() {
+  const { app } = useApp({ appInfo, capabilities: {} });
+  useHostStyles(app, app?.getHostContext());
+
+  return <div style={{ background: 'var(--color-background-primary)' }}>...</div>;
+}
+```
+
+### `useDocumentTheme()`
+
+React hook for reactive document theme.
+
+```typescript
+import { useDocumentTheme } from "@modelcontextprotocol/ext-apps/react";
+
+function MyApp() {
+  const theme = useDocumentTheme(); // "light" | "dark"
+
+  return <div className={theme === "dark" ? "dark-mode" : ""}>...</div>;
+}
+```
+
+### `useAutoResize()`
+
+Manual auto-resize control. Rarely needed since `autoResize` is enabled by default.
+
+```typescript
+import { useAutoResize } from "@modelcontextprotocol/ext-apps/react";
+
+function MyApp() {
+  const { app } = useApp({ appInfo, capabilities: {} });
+
+  // If you created App with autoResize: false, use this to enable it manually
+  useAutoResize(app);
+
+  return <div>...</div>;
+}
+```
+
+---
+
+## Style Utilities
+
+### `applyHostStyleVariables()`
+
+Applies host style variables to the document.
+
+```typescript
+import { applyHostStyleVariables } from "@modelcontextprotocol/ext-apps";
+
+applyHostStyleVariables(context.styles?.variables);
+```
+
+### `applyHostFonts()`
+
+Applies host fonts CSS to the document.
+
+```typescript
+import { applyHostFonts } from "@modelcontextprotocol/ext-apps";
+
+applyHostFonts(context.styles?.css?.fonts);
+```
+
+### `applyDocumentTheme()`
+
+Sets the document theme.
+
+```typescript
+import { applyDocumentTheme } from "@modelcontextprotocol/ext-apps";
+
+applyDocumentTheme("dark"); // or "light"
+```
+
+### `getDocumentTheme()`
+
+Gets the current document theme.
+
+```typescript
+import { getDocumentTheme } from "@modelcontextprotocol/ext-apps";
+
+const theme = getDocumentTheme(); // "light" | "dark"
 ```
 
 ---
@@ -390,14 +702,53 @@ Extracts the UI resource URI from a tool definition.
 
 ```typescript
 import { getToolUiResourceUri } from "@modelcontextprotocol/ext-apps/app-bridge";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
-const uri = getToolUiResourceUri(tool);
+const uri = getToolUiResourceUri(tool: Tool);
 // Returns: string | undefined
 ```
 
 ---
 
 ## Types
+
+### McpUiHostContext
+
+Context provided by the host during initialization and updates.
+
+```typescript
+interface McpUiHostContext {
+  theme?: "light" | "dark";
+  locale?: string;
+  toolInfo?: {
+    tool: Tool;
+    arguments?: Record<string, any>;
+  };
+  styles?: {
+    variables?: Record<string, string>;  // CSS custom properties
+    css?: {
+      fonts?: string;  // Font CSS (@font-face, @import)
+    };
+  };
+  safeAreaInsets?: {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+  };
+  availableDisplayModes?: ("inline" | "fullscreen" | "pip")[];
+}
+```
+
+### McpUiAppCapabilities
+
+Capabilities the app can declare.
+
+```typescript
+interface McpUiAppCapabilities {
+  tools?: {};  // Declare if app provides tools via oncalltool/onlisttools
+}
+```
 
 ### CallToolResult
 

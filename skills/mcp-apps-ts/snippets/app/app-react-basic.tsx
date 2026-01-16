@@ -1,7 +1,7 @@
 /**
  * Source: https://github.com/modelcontextprotocol/ext-apps/blob/main/examples/basic-server-react/src/mcp-app.tsx
  *
- * React-based MCP App using the useApp hook.
+ * React-based MCP App using the useApp hook with all handlers.
  *
  * Customize:
  * - Update app name and version in IMPLEMENTATION
@@ -9,7 +9,7 @@
  * - Add additional state and handlers as needed
  */
 
-import type { App } from "@modelcontextprotocol/ext-apps";
+import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useCallback, useEffect, useState } from "react";
@@ -24,6 +24,7 @@ const IMPLEMENTATION = {
 // Logging helper
 const log = {
   info: console.log.bind(console, "[APP]"),
+  warn: console.warn.bind(console, "[APP]"),
   error: console.error.bind(console, "[APP]"),
 };
 
@@ -41,6 +42,7 @@ function extractText(result: CallToolResult): string {
  */
 function MyMcpApp() {
   const [toolResult, setToolResult] = useState<CallToolResult | null>(null);
+  const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
 
   const { app, error } = useApp({
     appInfo: IMPLEMENTATION,
@@ -65,10 +67,28 @@ function MyMcpApp() {
         setToolResult(result);
       };
 
+      // Called when tool execution is cancelled
+      app.ontoolcancelled = (params) => {
+        log.warn("Tool call cancelled:", params.reason);
+      };
+
+      // Called when host context changes (theme, locale, styles)
+      app.onhostcontextchanged = (params) => {
+        log.info("Host context changed:", params);
+        setHostContext((prev) => ({ ...prev, ...params }));
+      };
+
       // Error handler
       app.onerror = log.error;
     },
   });
+
+  // Get initial host context after connection
+  useEffect(() => {
+    if (app) {
+      setHostContext(app.getHostContext());
+    }
+  }, [app]);
 
   // Show error state
   if (error) {
@@ -85,7 +105,7 @@ function MyMcpApp() {
   }
 
   // Render main UI
-  return <AppUI app={app} toolResult={toolResult} />;
+  return <AppUI app={app} toolResult={toolResult} hostContext={hostContext} />;
 }
 
 /**
@@ -96,9 +116,10 @@ function MyMcpApp() {
 interface AppUIProps {
   app: App;
   toolResult: CallToolResult | null;
+  hostContext?: McpUiHostContext;
 }
 
-function AppUI({ app, toolResult }: AppUIProps) {
+function AppUI({ app, toolResult, hostContext }: AppUIProps) {
   const [displayText, setDisplayText] = useState("Loading...");
   const [messageText, setMessageText] = useState("Hello from the app!");
   const [isLoading, setIsLoading] = useState(false);
@@ -160,7 +181,17 @@ function AppUI({ app, toolResult }: AppUIProps) {
   }, [app]);
 
   return (
-    <main style={{ padding: "1rem", fontFamily: "system-ui" }}>
+    <main
+      style={{
+        padding: "1rem",
+        fontFamily: "system-ui",
+        // Apply safe area insets from host context
+        paddingTop: hostContext?.safeAreaInsets?.top,
+        paddingRight: hostContext?.safeAreaInsets?.right,
+        paddingBottom: hostContext?.safeAreaInsets?.bottom,
+        paddingLeft: hostContext?.safeAreaInsets?.left,
+      }}
+    >
       <p style={{ color: "#666", fontSize: "0.875rem" }}>
         Watch activity in the DevTools console!
       </p>
@@ -194,6 +225,15 @@ function AppUI({ app, toolResult }: AppUIProps) {
         <button onClick={handleSendLog}>Send Log</button>
         <button onClick={handleOpenLink}>Open MCP Docs</button>
       </section>
+
+      {/* Display host context info */}
+      {hostContext && (
+        <section style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#888" }}>
+          <p>Theme: {hostContext.theme ?? "unknown"}</p>
+          <p>Locale: {hostContext.locale ?? "unknown"}</p>
+          <p>Display modes: {hostContext.availableDisplayModes?.join(", ") ?? "none"}</p>
+        </section>
+      )}
     </main>
   );
 }

@@ -2,6 +2,8 @@
 
 MCP Apps (SEP-1865) is an experimental extension to the Model Context Protocol that enables servers to deliver interactive HTML UIs to client applications.
 
+> **Active Development:** This SDK is under rapid development. Before starting, check the [ext-apps repository](https://github.com/modelcontextprotocol/ext-apps) for recent changes. See the [Open PRs & Issues](#open-prs--issues-to-watch) section below.
+
 ## Core Pattern: Tool + UI Resource
 
 MCP Apps uses a **two-part registration** pattern:
@@ -9,18 +11,18 @@ MCP Apps uses a **two-part registration** pattern:
 1. **Tool**: A standard MCP tool that performs server-side logic
 2. **UI Resource**: An HTML resource that renders the tool's results interactively
 
-These are linked together via the tool's `_meta` field using `RESOURCE_URI_META_KEY`.
+These are linked together via the tool's `_meta` field using `_meta.ui.resourceUri`.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         MCP SERVER                               │
-│                                                                  │
-│  ┌──────────────────────┐    ┌──────────────────────┐           │
-│  │   Tool: "get-time"   │───>│  Resource: ui://...  │           │
-│  │   _meta.ui.resourceUri    │  mimeType: mcp-app   │           │
-│  └──────────────────────┘    └──────────────────────┘           │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                         MCP SERVER                          |
+|                                                             |
+|  +----------------------+    +----------------------+       |
+|  |   Tool: "get-time"   |--->|  Resource: ui://...  |       |
+|  |   _meta.ui.resourceUri    |  mimeType: mcp-app   |       |
+|  +----------------------+    +----------------------+       |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
 ## Three-Component Architecture
@@ -86,36 +88,126 @@ ui://tool-name/app.html
 - **File**: Usually ends with `.html`
 
 This URI is used in:
-1. Tool's `_meta[RESOURCE_URI_META_KEY]` to link to the UI
+1. Tool's `_meta.ui.resourceUri` to link to the UI
 2. Resource registration to identify the resource
 3. Host requests to fetch the UI HTML
 
 ## Communication Flow
 
 ```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│   User   │───>│   Host   │───>│   App    │<──>│  Server  │
-└──────────┘    └──────────┘    └──────────┘    └──────────┘
-     │               │               │               │
-     │  1. Call tool │               │               │
-     │──────────────>│ 2. Call tool  │               │
-     │               │──────────────────────────────>│
-     │               │               │  3. Result    │
-     │               │<──────────────────────────────│
-     │               │  4. Load UI   │               │
-     │               │<─────────────>│               │
-     │               │  5. Send result               │
-     │               │──────────────>│               │
-     │               │  6. Render UI │               │
-     │<──────────────│<──────────────│               │
-     │               │               │               │
-     │               │  7. User interaction          │
-     │               │<──────────────│               │
-     │               │  8. callServerTool            │
-     │               │──────────────>│──────────────>│
-     │               │               │  9. Result    │
-     │               │               │<──────────────│
++----------+    +----------+    +----------+    +----------+
+|   User   |--->|   Host   |--->|   App    |<-->|  Server  |
++----------+    +----------+    +----------+    +----------+
+     |               |               |               |
+     |  1. Call tool |               |               |
+     |-------------->| 2. Call tool  |               |
+     |               |------------------------------>|
+     |               |               |  3. Result    |
+     |               |<------------------------------|
+     |               |  4. Load UI   |               |
+     |               |<------------->|               |
+     |               |  5. Send result               |
+     |               |-------------->|               |
+     |               |  6. Render UI |               |
+     |<--------------|<--------------|               |
+     |               |               |               |
+     |               |  7. User interaction          |
+     |               |<--------------|               |
+     |               |  8. callServerTool            |
+     |               |-------------->|-------------->|
+     |               |               |  9. Result    |
+     |               |               |<--------------|
 ```
+
+## Host Context
+
+The host provides context to the app during initialization and can send updates via `onhostcontextchanged`.
+
+### Available Context Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `theme` | `"light" \| "dark"` | Current host theme |
+| `locale` | `string` | User's locale (e.g., "en-US") |
+| `toolInfo` | `object` | Current tool and arguments |
+| `styles.variables` | `Record<string, string>` | CSS custom properties from host |
+| `styles.css.fonts` | `string` | Font CSS (@font-face, @import) |
+| `safeAreaInsets` | `object` | Safe area padding (top, right, bottom, left) |
+| `availableDisplayModes` | `string[]` | Supported display modes |
+
+### Using Host Context
+
+```typescript
+// Get context after connection
+const context = app.getHostContext();
+
+// Apply theme
+if (context?.theme === "dark") {
+  document.body.classList.add("dark-theme");
+}
+
+// Apply safe area insets
+if (context?.safeAreaInsets) {
+  document.body.style.paddingTop = `${context.safeAreaInsets.top}px`;
+}
+
+// Listen for changes
+app.onhostcontextchanged = (params) => {
+  if (params.theme) {
+    document.body.classList.toggle("dark-theme", params.theme === "dark");
+  }
+};
+```
+
+## Display Modes
+
+Apps can request different display modes for immersive experiences.
+
+### Available Modes
+
+| Mode | Description |
+|------|-------------|
+| `inline` | Default embedded view in chat |
+| `fullscreen` | Full-screen overlay |
+| `pip` | Picture-in-picture floating window |
+
+### Requesting Display Mode
+
+```typescript
+const context = app.getHostContext();
+
+// Check if fullscreen is available
+if (context?.availableDisplayModes?.includes("fullscreen")) {
+  // Request fullscreen
+  const result = await app.requestDisplayMode({ mode: "fullscreen" });
+  console.log("Display mode set to:", result.mode);
+}
+
+// Return to inline
+await app.requestDisplayMode({ mode: "inline" });
+```
+
+## Model Context Updates
+
+Apps can update the host's model context with app state, which will be available to the model in future reasoning.
+
+```typescript
+// Update with text content
+await app.updateModelContext({
+  content: [{ type: "text", text: "User selected 3 items totaling $150.00" }]
+});
+
+// Update with structured content
+await app.updateModelContext({
+  structuredContent: {
+    selectedItems: 3,
+    total: 150.00,
+    currency: "USD"
+  }
+});
+```
+
+The host will typically defer sending the context to the model until the next user message. Each call overwrites any previous context update.
 
 ## Security Model
 
@@ -124,18 +216,18 @@ This URI is used in:
 MCP Apps uses a two-layer iframe structure:
 
 ```
-┌─────────────────────────────────────────────┐
-│                    HOST                      │
-│  ┌─────────────────────────────────────────┐ │
-│  │         OUTER IFRAME (Sandbox Proxy)     │ │
-│  │    sandbox="allow-scripts allow-same-origin"
-│  │  ┌─────────────────────────────────────┐ │ │
-│  │  │         INNER IFRAME (App)          │ │ │
-│  │  │    sandbox="allow-scripts"          │ │ │
-│  │  │    [Your MCP App HTML]              │ │ │
-│  │  └─────────────────────────────────────┘ │ │
-│  └─────────────────────────────────────────┘ │
-└─────────────────────────────────────────────┘
++---------------------------------------------+
+|                    HOST                     |
+|  +-----------------------------------------+|
+|  |         OUTER IFRAME (Sandbox Proxy)    ||
+|  |    sandbox="allow-scripts allow-same-origin"
+|  |  +-------------------------------------+||
+|  |  |         INNER IFRAME (App)          |||
+|  |  |    sandbox="allow-scripts"          |||
+|  |  |    [Your MCP App HTML]              |||
+|  |  +-------------------------------------+||
+|  +-----------------------------------------+|
++---------------------------------------------+
 ```
 
 **Outer iframe**:
@@ -170,6 +262,20 @@ default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'
 
 This blocks all external network access by default.
 
+## Tool Visibility
+
+Tools can be configured for different audiences:
+
+```typescript
+// Default: visible to both model and app
+_meta: { ui: { resourceUri: "ui://cart/widget.html" } }
+
+// App-only: hidden from model, only callable by the UI
+_meta: { ui: { resourceUri: "ui://cart/widget.html", visibility: ["app"] } }
+```
+
+Use `visibility: ["app"]` for actions that should only be triggered by user interaction in the UI, not by the model.
+
 ## Resource MIME Type
 
 MCP App resources must use the specific MIME type:
@@ -203,10 +309,13 @@ This follows the MCP pattern where the "client-like" component (App) initiates.
 ### App Event Handlers
 
 ```typescript
-app.ontoolinput    // Receives tool input arguments
-app.ontoolresult   // Receives tool execution result
-app.onteardown     // Cleanup before unmounting
-app.onerror        // Handle errors
+app.ontoolinput       // Receives complete tool input arguments
+app.ontoolinputpartial // Receives streaming partial tool arguments
+app.ontoolresult      // Receives tool execution result
+app.ontoolcancelled   // Handles tool cancellation
+app.onhostcontextchanged // Handles host context changes
+app.onteardown        // Cleanup before unmounting
+app.onerror           // Handle errors
 ```
 
 ### AppBridge Event Handlers
@@ -298,3 +407,53 @@ export default defineConfig({
 ```
 
 Then serve the host via Vite dev server instead of static file serving.
+
+### 6. Handlers silently overwrite each other
+
+Setting a handler property multiple times will silently overwrite the previous handler:
+
+```typescript
+// WRONG - only the second handler will be called
+app.ontoolresult = (result) => console.log("First handler");
+app.ontoolresult = (result) => console.log("Second handler");
+```
+
+If you need multiple listeners, use `setNotificationHandler()` directly and manage your own dispatch.
+
+### 7. unsafe-eval limitation
+
+Some libraries (e.g., Three.js) require `unsafe-eval` in CSP. This is currently not supported by the default sandbox configuration. Check [issue #199](https://github.com/modelcontextprotocol/ext-apps/issues/199) for updates.
+
+---
+
+## Open PRs & Issues to Watch
+
+The MCP Apps SDK is under active development. Here are key open items that may affect your implementation:
+
+### Open PRs (may change behavior)
+
+| PR | Title | Impact |
+|----|-------|--------|
+| [#273](https://github.com/modelcontextprotocol/ext-apps/pull/273) | Enforce correct UI resource format | May change `getToolUiResourceUri` behavior |
+| [#276](https://github.com/modelcontextprotocol/ext-apps/pull/276) | Add description for ui/initialize lifecycle | Documentation improvement |
+| [#215](https://github.com/modelcontextprotocol/ext-apps/pull/215) | Add ui/close-resource request | New feature: UI-initiated termination |
+| [#229](https://github.com/modelcontextprotocol/ext-apps/pull/229) | Refactor server start in examples | Example code changes |
+
+### Open Issues (known limitations)
+
+| Issue | Title | Status |
+|-------|-------|--------|
+| [#225](https://github.com/modelcontextprotocol/ext-apps/issues/225) | Handlers silently overwrite each other | Known bug |
+| [#265](https://github.com/modelcontextprotocol/ext-apps/issues/265) | UI Resource Permissions discrepancy | Spec/SDK mismatch |
+| [#199](https://github.com/modelcontextprotocol/ext-apps/issues/199) | unsafe-eval requirement for some apps | Limitation |
+| [#269](https://github.com/modelcontextprotocol/ext-apps/issues/269) | Duplicate placement of McpUiResourceMeta | Spec clarification needed |
+
+### Recent Changes (v0.4.1)
+
+- Fullscreen support for apps
+- PDF viewer with chunked loading
+- UV migration for Python examples
+- DIST_DIR path fixes for npm execution
+- Model context updates with YAML frontmatter
+
+Always check the [ext-apps releases](https://github.com/modelcontextprotocol/ext-apps/releases) for the latest changes.

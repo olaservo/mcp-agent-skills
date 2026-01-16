@@ -13,6 +13,7 @@ Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865)
 > - [Open Pull Requests](https://github.com/modelcontextprotocol/ext-apps/pulls) - upcoming changes
 > - [Issues](https://github.com/modelcontextprotocol/ext-apps/issues) - known bugs and feature requests
 > - [Recent Commits](https://github.com/modelcontextprotocol/ext-apps/commits/main) - latest changes
+> - [Releases](https://github.com/modelcontextprotocol/ext-apps/releases) - version history
 
 ## How It Works
 
@@ -29,26 +30,30 @@ Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865)
 
 ```
 Want a complete, runnable starter project?
-  └─> Copy a SCAFFOLD (new!)
+  -> Copy a SCAFFOLD (new!)
       - scaffold-vanilla-server: Full server + vanilla JS UI
         Copy the directory, run npm install && npm run dev
         See snippets/scaffold/vanilla-server/README.md
 
 Building an MCP server that provides tools with UIs?
-  └─> Start with SERVER snippets
+  -> Start with SERVER snippets
       - tool-with-ui: Register tool with associated HTML UI
       - tool-with-structured: Return structured content
       - resource-with-csp: Add Content Security Policy
+      - server-with-private-tools: Hide tools from model (NEW!)
 
 Building the HTML UI that displays to users?
-  └─> Start with APP snippets
+  -> Start with APP snippets
       - app-vanilla-basic: Simple App class setup (vanilla JS)
-      - app-vanilla-full: Full lifecycle (vanilla JS)
+      - app-vanilla-full: Full lifecycle handlers (vanilla JS)
       - app-react-basic: React hooks integration
+      - app-react-with-styles: React with host styling (NEW!)
       - tool-calling: Call back to server tools
+      - app-with-display-mode: Request fullscreen/pip (NEW!)
+      - app-with-model-context: Update model context (NEW!)
 
 Building a host/client that embeds MCP app UIs?
-  └─> Start with HOST snippets
+  -> Start with HOST snippets
       - host-full-integration: Complete end-to-end flow (single server)
       - host-multi-server: Connect to multiple servers with UI routing
       - sandbox-proxy: Required for security
@@ -60,13 +65,14 @@ Building a host/client that embeds MCP app UIs?
 
 ```
 Minimal dependencies, simple UI?
-  └─> Use Vanilla JS snippets
+  -> Use Vanilla JS snippets
       - app-vanilla-basic for getting started
       - app-vanilla-full for full control
 
 React-based UI with state management?
-  └─> Use React snippets
+  -> Use React snippets
       - app-react-basic for hooks integration
+      - app-react-with-styles for host styling
 ```
 
 ---
@@ -90,6 +96,8 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 - **`RESOURCE_MIME_TYPE`**: `text/html;profile=mcp-app` identifies MCP App resources
 - **PostMessageTransport**: Communication between app iframe and host
 - **Double-iframe Sandboxing**: Outer iframe isolates, inner iframe runs app with `allow-scripts`
+- **Host Context**: Theme, locale, styles, and safe area information from the host
+- **Display Modes**: Inline, fullscreen, or picture-in-picture display options
 
 ### 1.3 Browse Available Snippets
 
@@ -99,10 +107,14 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 | `tool-with-ui` | Tool with UI resource registration | Basic server setup |
 | `tool-with-structured` | Tool returning structuredContent | Rich data responses |
 | `resource-with-csp` | UI resource with CSP metadata | Security-conscious apps |
+| `server-with-private-tools` | Tools hidden from model | UI-only actions (NEW!) |
 | `app-vanilla-basic` | Basic App class (vanilla JS) | Quick prototypes |
 | `app-vanilla-full` | Full lifecycle handlers | Production apps |
 | `app-react-basic` | React hooks integration | React projects |
+| `app-react-with-styles` | React with host styling | Themed React apps (NEW!) |
 | `tool-calling` | Call MCP tools from app | Interactive UIs |
+| `app-with-display-mode` | Request fullscreen/pip | Immersive UIs (NEW!) |
+| `app-with-model-context` | Update model context | State persistence (NEW!) |
 | `app-bridge-basic` | Basic host embedding | Simple integration |
 | `app-bridge-handlers` | Full AppBridge handlers | Custom hosts |
 | `host-full-integration` | Complete host flow | End-to-end hosting |
@@ -122,7 +134,12 @@ npm install @modelcontextprotocol/sdk @modelcontextprotocol/ext-apps zod
 Copy the `tool-with-ui` snippet and customize:
 1. Define your tool's input schema
 2. Create the UI resource HTML content
-3. Link tool to UI via `ui://` URI and `RESOURCE_URI_META_KEY`
+3. Link tool to UI via `ui://` URI and `_meta.ui.resourceUri`
+
+For tools that should only be callable by the UI (not the model), use `server-with-private-tools`:
+```typescript
+_meta: { ui: { resourceUri: "ui://...", visibility: ["app"] } }
+```
 
 > **See also:** For MCP server basics (transports, tool registration patterns), refer to the **mcp-server-ts** skill.
 
@@ -142,9 +159,50 @@ Copy the appropriate app snippet and implement:
 1. Initialize App with name and version
 2. Register handlers BEFORE calling `connect()`
 3. Handle `ontoolresult` for tool execution results
-4. Call tools via `app.callServerTool()`
+4. Handle `ontoolcancelled` for cancellation
+5. Handle `onhostcontextchanged` for theme/style changes
+6. Call tools via `app.callServerTool()`
 
-### 2.3 Host-Side: Embed Apps (Optional)
+### 2.3 Host Context & Styling
+
+Apps can access host context for theme, styles, and safe areas:
+
+```typescript
+const context = app.getHostContext();
+// {
+//   theme: "light" | "dark",
+//   locale: "en-US",
+//   styles: { variables: { ... }, css: { fonts: "..." } },
+//   safeAreaInsets: { top, right, bottom, left },
+//   availableDisplayModes: ["inline", "fullscreen", "pip"]
+// }
+```
+
+**React:** Use `useHostStyleVariables()` and `useHostFonts()` hooks to automatically apply host styles.
+
+### 2.4 Display Modes
+
+Apps can request different display modes:
+
+```typescript
+// Check if fullscreen is available
+if (context?.availableDisplayModes?.includes("fullscreen")) {
+  await app.requestDisplayMode({ mode: "fullscreen" });
+}
+```
+
+### 2.5 Model Context Updates
+
+Apps can update the model's context with state information:
+
+```typescript
+await app.updateModelContext({
+  content: [{ type: "text", text: "User selected 3 items" }],
+  structuredContent: { items: 3, total: 150.00 }
+});
+```
+
+### 2.6 Host-Side: Embed Apps (Optional)
 
 ```bash
 npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk
@@ -192,6 +250,8 @@ npm install && npm start
 - [ ] App initializes without errors
 - [ ] Handlers registered BEFORE `connect()`
 - [ ] `ontoolresult` receives tool execution results
+- [ ] `ontoolcancelled` handles cancellation gracefully
+- [ ] `onhostcontextchanged` responds to theme changes
 - [ ] `callServerTool()` successfully calls server
 - [ ] CSP is properly declared (if using)
 
@@ -226,15 +286,19 @@ Server runs at `http://localhost:3102/mcp`. Test with the [basic-host example](h
 | `tool-with-ui` | Register MCP tool with UI resource using `registerAppTool` and `registerAppResource` |
 | `tool-with-structured` | Tool returning `structuredContent` for typed responses |
 | `resource-with-csp` | UI resource with Content Security Policy metadata |
+| `server-with-private-tools` | Tools with `visibility: ["app"]` hidden from model |
 
 ### App (HTML UI in iframe)
 
 | Name | Description |
 |------|-------------|
 | `app-vanilla-basic` | Basic App class with `ontoolresult` handler (vanilla JS) |
-| `app-vanilla-full` | Full lifecycle: `ontoolresult`, `ontoolinput`, `onteardown`, `onerror`, messaging |
+| `app-vanilla-full` | Full lifecycle: all handlers including `ontoolcancelled`, `onhostcontextchanged` |
 | `app-react-basic` | React component with `useApp` hook |
+| `app-react-with-styles` | React with `useHostStyleVariables` and `useHostFonts` |
 | `tool-calling` | Examples of calling MCP tools from app UI |
+| `app-with-display-mode` | Request fullscreen/pip display modes |
+| `app-with-model-context` | Update model context with app state |
 
 ### Host (Embedding Apps)
 
@@ -252,10 +316,10 @@ Server runs at `http://localhost:3102/mcp`. Test with the [basic-host example](h
 
 For deeper guidance, load these reference documents:
 
-- [MCP Apps Architecture](./reference/mcp_apps_architecture.md) - Component overview, data flow, security, **common pitfalls**
+- [MCP Apps Architecture](./reference/mcp_apps_architecture.md) - Component overview, data flow, security, **common pitfalls**, **open PRs/issues**
 - [MCP Apps API Reference](./reference/mcp_apps_api_reference.md) - Full API documentation
 
-> **Important:** Read the "Common Pitfalls" section in the Architecture doc before implementing a host. Key issues include srcdoc iframe origins, protocol direction, and message sequencing.
+> **Important:** Read the "Common Pitfalls" section in the Architecture doc before implementing a host. Key issues include srcdoc iframe origins, protocol direction, message sequencing, and handler overwrite bugs.
 
 ---
 
@@ -263,9 +327,9 @@ For deeper guidance, load these reference documents:
 
 | Package | Import Path | Purpose |
 |---------|-------------|---------|
-| Main SDK | `@modelcontextprotocol/ext-apps` | App class, types |
+| Main SDK | `@modelcontextprotocol/ext-apps` | App class, types, style utilities |
 | Server helpers | `@modelcontextprotocol/ext-apps/server` | `registerAppTool`, `registerAppResource` |
-| React | `@modelcontextprotocol/ext-apps/react` | `useApp` hook |
+| React | `@modelcontextprotocol/ext-apps/react` | `useApp`, `useHostStyleVariables`, `useHostFonts`, `useHostStyles` |
 | App Bridge | `@modelcontextprotocol/ext-apps/app-bridge` | AppBridge for hosts |
 
 ---
