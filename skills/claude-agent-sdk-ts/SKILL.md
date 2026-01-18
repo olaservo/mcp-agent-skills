@@ -67,6 +67,22 @@ export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
 
 ---
 
+## When to Use Claude Agent SDK
+
+**Use Claude Agent SDK when you want:**
+- Quick setup with minimal boilerplate
+- Out-of-the-box Claude Code capabilities
+- Pre-built tool ecosystem with MCP server integration
+- Session management and multi-turn conversations
+- Hook system for tool auditing and control
+
+**Do NOT use Claude Agent SDK when you need:**
+- Control over temperature, top_p, top_k, or other advanced sampling parameters
+- Direct control over the underlying API request/response
+- Non-Claude models
+
+---
+
 ## Quick Start Decision Trees
 
 ### Which API Should I Use?
