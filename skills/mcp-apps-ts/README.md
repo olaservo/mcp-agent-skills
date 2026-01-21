@@ -36,6 +36,21 @@ This skill tracks the [ext-apps repository](https://github.com/modelcontextproto
 
 ## Changelog
 
+### 2026-01-21 - Updated for ext-apps post-v0.4.1 changes
+
+**API Reference:**
+- Added missing `onlistresourcetemplates` AppBridge handler
+
+**Architecture Docs:**
+- Updated "Open PRs & Issues to Watch" with current high-priority PRs (#313, #294, #316, #314, #295)
+- Updated "Recent Changes" section with post-v0.4.1 additions (say-server, shadertoy improvements, etc.)
+
+**SKILL.md:**
+- Added "Common Gotchas" section covering:
+  - Always describe UI in `content` for model context
+  - Data flow to model (`content`/`structuredContent` vs `_meta`)
+  - Upcoming `hasUiSupport()` pattern for conditional tool registration
+
 ### 2026-01-16 (Audit Fix) - AppBridge documentation gaps
 
 **Added to API Reference:**
