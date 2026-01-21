@@ -850,6 +850,19 @@ appBridge.onreadresource = async ({ uri }, extra) => {
 };
 ```
 
+#### `onlistresourcetemplates`
+
+Called when app requests the resource templates list.
+
+```typescript
+appBridge.onlistresourcetemplates = async (params, extra) => {
+  return mcpClient.request(
+    { method: "resources/templates/list", params },
+    ListResourceTemplatesResultSchema
+  );
+};
+```
+
 #### `onlistprompts`
 
 Called when app requests the prompt list.

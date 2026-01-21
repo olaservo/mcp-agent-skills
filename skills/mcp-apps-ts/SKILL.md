@@ -255,6 +255,34 @@ npm install && npm start
 - [ ] `callServerTool()` successfully calls server
 - [ ] CSP is properly declared (if using)
 
+### 3.4 Common Gotchas
+
+**1. Always describe your UI in `content`:**
+The model doesn't see the visual UI - only the tool result content. Always include a text description of what was rendered:
+
+```typescript
+return {
+  content: [{ type: "text", text: "Displayed weather widget showing 72°F, sunny conditions" }],
+  structuredContent: { temp: 72, condition: "sunny" }
+};
+```
+
+**2. Data flow to model context:**
+- `content` and `structuredContent` → sent to model context
+- `_meta` → NOT sent to model (only for host/UI metadata)
+- Don't put large base64 data in `structuredContent` - use `content` with resource references
+
+**3. Check for UI support before registering (coming soon):**
+Once [PR #313](https://github.com/modelcontextprotocol/ext-apps/pull/313) merges, use `hasUiSupport()` to conditionally register UI tools:
+
+```typescript
+server.oninitialized = ({ clientCapabilities }) => {
+  if (hasUiSupport(clientCapabilities)) {
+    registerAppTool(server, "weather", { /* ... */ }, handler);
+  }
+};
+```
+
 ---
 
 ## Available Snippets Catalog

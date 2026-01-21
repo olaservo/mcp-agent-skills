@@ -434,10 +434,13 @@ The MCP Apps SDK is under active development. Here are key open items that may a
 
 | PR | Title | Impact |
 |----|-------|--------|
+| [#313](https://github.com/modelcontextprotocol/ext-apps/pull/313) | `hasUiSupport`/`getUiCapability` helpers | New server helpers to check client UI support |
+| [#294](https://github.com/modelcontextprotocol/ext-apps/pull/294) | `isToolVisibilityModelOnly`/`isToolVisibilityAppOnly` | New visibility checking helpers |
+| [#316](https://github.com/modelcontextprotocol/ext-apps/pull/316) | Skill docs: UI support check and data handling | Gotchas for skill docs |
+| [#314](https://github.com/modelcontextprotocol/ext-apps/pull/314) | Patterns guide doc | New documentation |
+| [#295](https://github.com/modelcontextprotocol/ext-apps/pull/295) | widgetSessionId for widget consolidation | Spec addition |
 | [#273](https://github.com/modelcontextprotocol/ext-apps/pull/273) | Enforce correct UI resource format | May change `getToolUiResourceUri` behavior |
-| [#276](https://github.com/modelcontextprotocol/ext-apps/pull/276) | Add description for ui/initialize lifecycle | Documentation improvement |
 | [#215](https://github.com/modelcontextprotocol/ext-apps/pull/215) | Add ui/close-resource request | New feature: UI-initiated termination |
-| [#229](https://github.com/modelcontextprotocol/ext-apps/pull/229) | Refactor server start in examples | Example code changes |
 
 ### Open Issues (known limitations)
 
@@ -448,12 +451,21 @@ The MCP Apps SDK is under active development. Here are key open items that may a
 | [#199](https://github.com/modelcontextprotocol/ext-apps/issues/199) | unsafe-eval requirement for some apps | Limitation |
 | [#269](https://github.com/modelcontextprotocol/ext-apps/issues/269) | Duplicate placement of McpUiResourceMeta | Spec clarification needed |
 
-### Recent Changes (v0.4.1)
+### Recent Changes (v0.4.1+)
 
+**v0.4.1 (Jan 15, 2026):**
 - Fullscreen support for apps
 - PDF viewer with chunked loading
 - UV migration for Python examples
 - DIST_DIR path fixes for npm execution
 - Model context updates with YAML frontmatter
+
+**Post v0.4.1:**
+- `say-server` example: streaming TTS with karaoke highlighting
+- Shadertoy: streaming partial input, mouse/touch interaction, host styling
+- ThreeJS: performance improvements, host styling, transparent background
+- QR-server: Python SDK meta parameter for CSP metadata
+- Claude plugin marketplace.json for distribution
+- SSE transport support for basic-host
 
 Always check the [ext-apps releases](https://github.com/modelcontextprotocol/ext-apps/releases) for the latest changes.
