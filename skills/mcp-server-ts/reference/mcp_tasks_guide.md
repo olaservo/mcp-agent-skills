@@ -83,7 +83,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   InMemoryTaskStore,
   InMemoryTaskMessageQueue,
-} from "@modelcontextprotocol/sdk/experimental";
+} from "@modelcontextprotocol/sdk/experimental/tasks";
 
 const taskStore = new InMemoryTaskStore();
 const taskMessageQueue = new InMemoryTaskMessageQueue();
@@ -133,11 +133,12 @@ server.experimental.tasks.registerToolTask(
 
 **getTaskResult**: Called when client invokes `tasks/result`.
 - Returns final `CallToolResult` when completed
-- Can trigger elicitation if status is `input_required`
+- Elicitation is handled in the background process, not here
 
-**cancelTask**: Called when client invokes `tasks/cancel`.
+**cancelTask** (optional): Called when client invokes `tasks/cancel`.
 - Sets internal cancelled flag
 - Background processing should check this flag and exit gracefully
+- If omitted, the SDK's InMemoryTaskStore handles cancellation automatically
 
 ---
 
@@ -167,29 +168,53 @@ await extra.taskStore.storeTaskResult(taskId, "failed", {
 
 ## Input Required Flow (Elicitation)
 
-When a task needs user clarification:
+When a task needs user clarification, handle elicitation directly in the background process:
 
-1. Update status to `input_required`:
-   ```typescript
-   await taskStore.updateTaskStatus(taskId, "input_required", "Need clarification");
-   ```
+```typescript
+// In background process function (pass sendRequest from extra):
+async function processTask(taskId, taskStore, sendRequest) {
+  // ... processing stages ...
 
-2. In `getTaskResult`, send elicitation request:
-   ```typescript
-   const result = await extra.sendRequest(
-     {
-       method: "elicitation/create",
-       params: {
-         message: "Please clarify...",
-         requestedSchema: { /* JSON Schema */ },
-       },
-     },
-     ElicitResultSchema,
-     { timeout: 60000 }
-   );
-   ```
+  if (needsClarification) {
+    // 1. Update status to input_required
+    await taskStore.updateTaskStatus(taskId, "input_required", "Need clarification");
 
-3. Handle response and resume processing
+    try {
+      // 2. Send elicitation via sendRequest (works on STDIO)
+      const result = await sendRequest(
+        {
+          method: "elicitation/create",
+          params: {
+            message: "Please clarify...",
+            requestedSchema: { /* JSON Schema */ },
+          },
+        },
+        ElicitResultSchema
+      );
+
+      // 3. Process response
+      if (result.action === "accept" && result.content) {
+        clarification = result.content.clarification;
+      } else {
+        clarification = "default interpretation";
+      }
+    } catch (error) {
+      // HTTP transport graceful degradation
+      console.warn(`Elicitation failed (HTTP transport?):`, error);
+      clarification = "default (elicitation unavailable on HTTP)";
+    }
+
+    // 4. Resume working status and continue
+    await taskStore.updateTaskStatus(taskId, "working", "Continuing...");
+  }
+
+  // ... continue processing ...
+}
+```
+
+**Note:** Elicitation only works on STDIO transport. HTTP transport support requires
+SDK PR #1210's elicitInputStream API.
+See: https://github.com/modelcontextprotocol/typescript-sdk/pull/1210
 
 ---
 
@@ -266,4 +291,5 @@ cancelTask: async (args, extra) => {
 4. **Handle cancellation**: Check for cancellation during long loops
 5. **Reasonable pollInterval**: 500ms-2000ms depending on operation speed
 6. **Check client capabilities**: Only use elicitation if client supports it
+7. **HTTP graceful degradation**: Wrap elicitation in try/catch and fall back to defaults
 

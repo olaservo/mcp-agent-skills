@@ -17,7 +17,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CallToolResult, GetTaskResult, Task } from "@modelcontextprotocol/sdk/types.js";
-import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental";
+import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental/tasks";
 
 // Tool input schema
 export const TaskDemoSchema = z.object({
@@ -173,6 +173,10 @@ export const registerTaskDemoTool = (server: McpServer) => {
     /**
      * Cancels a running task.
      * Called when client invokes `tasks/cancel`.
+     *
+     * Note: This handler is optional. If omitted, the SDK's InMemoryTaskStore
+     * handles task cancellation automatically. Including it allows custom
+     * cleanup logic and is useful for teaching the full task lifecycle.
      */
     cancelTask: async (args, extra): Promise<void> => {
       const state = taskStates.get(extra.taskId);

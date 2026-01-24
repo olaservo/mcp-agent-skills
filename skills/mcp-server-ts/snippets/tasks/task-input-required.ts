@@ -3,8 +3,8 @@
  * https://github.com/modelcontextprotocol/servers/blob/main/src/everything/tools/simulate-research-query.ts
  *
  * Task demonstrating input_required status with elicitation.
- * When a task needs user clarification, it pauses in input_required state.
- * The client calls tasks/result to trigger elicitation via side-channel.
+ * When a task needs user clarification, elicitation is sent directly during
+ * background processing. Includes HTTP transport graceful degradation.
  *
  * Customize as needed for your use case.
  */
@@ -14,9 +14,10 @@ import {
   CallToolResult,
   GetTaskResult,
   Task,
+  ElicitResult,
   ElicitResultSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental";
+import { CreateTaskResult } from "@modelcontextprotocol/sdk/experimental/tasks";
 
 // Tool input schema
 export const AmbiguousTaskSchema = z.object({
@@ -36,7 +37,6 @@ interface TaskState {
   query: string;
   requiresClarification: boolean;
   currentStage: number;
-  waitingForClarification: boolean;
   clarification?: string;
   cancelled: boolean;
   completed: boolean;
@@ -48,15 +48,22 @@ const taskStates = new Map<string, TaskState>();
 
 /**
  * Runs the background processing for a task.
- * May pause for clarification if needed.
+ * Handles elicitation directly if clarification is needed.
  * Checks for cancellation between stages.
+ *
+ * Note: Elicitation only works on STDIO transport. On HTTP transport,
+ * sendRequest will fail and the task will use a default interpretation.
+ * Full HTTP support requires SDK PR #1210's elicitInputStream API.
+ * See: https://github.com/modelcontextprotocol/typescript-sdk/pull/1210
  */
 async function processTask(
   taskId: string,
   taskStore: {
     updateTaskStatus: (taskId: string, status: Task["status"], message?: string) => Promise<void>;
     storeTaskResult: (taskId: string, status: "completed" | "failed", result: CallToolResult) => Promise<void>;
-  }
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendRequest: any
 ): Promise<void> {
   const state = taskStates.get(taskId);
   if (!state) return;
@@ -76,14 +83,64 @@ async function processTask(
 
       // At "Gathering context" stage (index 1), check if clarification is needed
       if (i === 1 && state.requiresClarification && !state.clarification) {
-        state.waitingForClarification = true;
+        // Update status to show we're requesting input
         await taskStore.updateTaskStatus(
           taskId,
           "input_required",
-          `Query "${state.query}" is ambiguous. Please clarify your intent.`
+          `Query "${state.query}" is ambiguous. Requesting clarification...`
         );
-        // Processing pauses here - getTaskResult will resume it after elicitation
-        return;
+
+        try {
+          // Try elicitation via sendRequest (works on STDIO, fails on HTTP)
+          const elicitResult: ElicitResult = await sendRequest(
+            {
+              method: "elicitation/create",
+              params: {
+                message: `Please clarify your query: "${state.query}"`,
+                requestedSchema: {
+                  type: "object",
+                  properties: {
+                    clarification: {
+                      type: "string",
+                      title: "Clarification",
+                      description: "What did you mean by this query?",
+                    },
+                  },
+                  required: ["clarification"],
+                },
+              },
+            },
+            ElicitResultSchema
+          );
+
+          // Process elicitation response
+          if (elicitResult.action === "accept" && elicitResult.content) {
+            state.clarification =
+              (elicitResult.content as { clarification?: string }).clarification ||
+              "User accepted without input";
+          } else if (elicitResult.action === "decline") {
+            state.clarification = "User declined - using default interpretation";
+          } else {
+            state.clarification = "User cancelled - using default interpretation";
+          }
+        } catch (error) {
+          // Elicitation failed (likely HTTP transport without streaming support)
+          // Use default interpretation and continue - task should still complete
+          console.warn(
+            `Elicitation failed for task ${taskId} (HTTP transport?):`,
+            error instanceof Error ? error.message : String(error)
+          );
+          state.clarification = "default (elicitation unavailable on HTTP)";
+        }
+
+        // Resume with working status
+        await taskStore.updateTaskStatus(
+          taskId,
+          "working",
+          `Continuing with interpretation: "${state.clarification}"...`
+        );
+
+        // Continue processing (no return - keep going through the loop)
       }
 
       // Simulate work for this stage
@@ -100,7 +157,7 @@ async function processTask(
       content: [
         {
           type: "text",
-          text: `Query processed: ${queryDisplay}\n\nCompleted ${STAGES.length} stages:\n${STAGES.map((s) => `  - ${s} ✓`).join("\n")}\n\nThis demonstrates the input_required flow where tasks can pause for user input.`,
+          text: `Query processed: ${queryDisplay}\n\nCompleted ${STAGES.length} stages:\n${STAGES.map((s) => `  - ${s} ✓`).join("\n")}\n\nThis demonstrates the input_required flow where tasks request user input via elicitation.`,
         },
       ],
     };
@@ -120,8 +177,8 @@ const name = "ambiguous-task";
 const config = {
   title: "Ambiguous Task Demo",
   description:
-    "Demonstrates input_required status and elicitation side-channel with multi-stage progress. " +
-    "When requiresClarification is true, the task pauses and requests user input via elicitation.",
+    "Demonstrates input_required status and elicitation with multi-stage progress. " +
+    "When requiresClarification is true, sends elicitation request during processing.",
   inputSchema: AmbiguousTaskSchema,
   execution: { taskSupport: "required" as const },
 };
@@ -131,12 +188,12 @@ const config = {
  *
  * This tool demonstrates:
  * - Multi-stage progress with status updates
- * - Task pausing in input_required state
- * - Using elicitation as a side-channel in getTaskResult
- * - Resuming processing after receiving user input
+ * - Elicitation directly in background process via sendRequest
+ * - HTTP transport graceful degradation (falls back to default interpretation)
  * - Cancellation handling
  *
- * Note: Only works when client supports elicitation capability.
+ * Note: Elicitation only works on STDIO transport. HTTP support requires SDK PR #1210.
+ * See: https://github.com/modelcontextprotocol/typescript-sdk/pull/1210
  *
  * @param {McpServer} server - The McpServer instance where the tool will be registered.
  */
@@ -147,8 +204,9 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
 
   server.experimental.tasks.registerToolTask(name, config, {
     /**
-     * Creates a new task. If clarification is needed and client supports elicitation,
-     * the task will pause in input_required state.
+     * Creates a new task and starts background processing.
+     * If clarification is needed and client supports elicitation,
+     * elicitation will be sent during processing.
      */
     createTask: async (args, extra): Promise<CreateTaskResult> => {
       const validatedArgs = AmbiguousTaskSchema.parse(args);
@@ -163,13 +221,13 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
         query: validatedArgs.query,
         requiresClarification: validatedArgs.requiresClarification && clientSupportsElicitation,
         currentStage: 0,
-        waitingForClarification: false,
         cancelled: false,
         completed: false,
       });
 
-      // Start async processing
-      processTask(task.taskId, extra.taskStore).catch((error) => {
+      // Start async processing - pass sendRequest for elicitation
+      // (works on STDIO, gracefully degrades on HTTP)
+      processTask(task.taskId, extra.taskStore, extra.sendRequest).catch((error) => {
         console.error(`Task ${task.taskId} failed:`, error);
         extra.taskStore.updateTaskStatus(task.taskId, "failed", String(error)).catch(console.error);
       });
@@ -185,74 +243,11 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
     },
 
     /**
-     * Returns the task result, or handles input_required via elicitation side-channel.
-     *
-     * When status is input_required:
-     * 1. Sends elicitation request to get user clarification
-     * 2. Stores clarification in task state
-     * 3. Resumes background processing
-     * 4. Returns indication that work is resuming (client should poll again)
+     * Returns the task result.
+     * Elicitation is now handled directly in the background process.
      */
     getTaskResult: async (args, extra): Promise<CallToolResult> => {
-      const task = await extra.taskStore.getTask(extra.taskId);
-      const state = taskStates.get(extra.taskId);
-
-      // Handle input_required - use tasks/result as side-channel for elicitation
-      if (task?.status === "input_required" && state?.waitingForClarification) {
-        // Send elicitation request through the side-channel
-        const elicitationResult = await extra.sendRequest(
-          {
-            method: "elicitation/create",
-            params: {
-              message: `Please clarify your query: "${state.query}"`,
-              requestedSchema: {
-                type: "object",
-                properties: {
-                  clarification: {
-                    type: "string",
-                    title: "Clarification",
-                    description: "What did you mean by this query?",
-                  },
-                },
-                required: ["clarification"],
-              },
-            },
-          },
-          ElicitResultSchema,
-          { timeout: 5 * 60 * 1000 } // 5 minute timeout for user response
-        );
-
-        // Process elicitation response
-        if (elicitationResult.action === "accept" && elicitationResult.content) {
-          state.clarification =
-            (elicitationResult.content as { clarification?: string }).clarification ||
-            "User accepted without input";
-        } else if (elicitationResult.action === "decline") {
-          state.clarification = "User declined - using default interpretation";
-        } else {
-          state.clarification = "User cancelled - using default interpretation";
-        }
-
-        state.waitingForClarification = false;
-
-        // Resume background processing
-        processTask(extra.taskId, extra.taskStore).catch((error) => {
-          console.error(`Task ${extra.taskId} failed:`, error);
-          extra.taskStore.updateTaskStatus(extra.taskId, "failed", String(error)).catch(console.error);
-        });
-
-        // Return indication that work is resuming (client should poll again)
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Resuming with clarification: "${state.clarification}"`,
-            },
-          ],
-        };
-      }
-
-      // Normal case: return the stored result
+      // Return the stored result
       const result = await extra.taskStore.getTaskResult(extra.taskId);
 
       // Clean up state
@@ -264,12 +259,15 @@ export const registerAmbiguousTaskTool = (server: McpServer) => {
     /**
      * Cancels a running task.
      * Called when client invokes `tasks/cancel`.
+     *
+     * Note: This handler is optional. If omitted, the SDK's InMemoryTaskStore
+     * handles task cancellation automatically. Including it allows custom
+     * cleanup logic.
      */
     cancelTask: async (args, extra): Promise<void> => {
       const state = taskStates.get(extra.taskId);
       if (state) {
         state.cancelled = true;
-        state.waitingForClarification = false; // Cancel any pending clarification
       }
       // The task store handles updating the task status to "cancelled"
     },

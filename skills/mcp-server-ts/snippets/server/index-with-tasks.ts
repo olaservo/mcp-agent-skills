@@ -14,7 +14,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
   InMemoryTaskStore,
   InMemoryTaskMessageQueue,
-} from "@modelcontextprotocol/sdk/experimental";
+} from "@modelcontextprotocol/sdk/experimental/tasks";
 
 // Server Factory response
 export type ServerFactoryResponse = {
