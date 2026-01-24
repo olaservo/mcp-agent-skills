@@ -273,6 +273,7 @@ node dist/index.js @modelcontextprotocol/server-everything "add 5 and 3"
 | Name | Description |
 |------|-------------|
 | `tasks` | Task support for long-running tool operations with progress streaming |
+| `tasks-receiver` | Receiver-side task support for handling task-augmented requests (bidirectional tasks) |
 
 ### Stores
 
@@ -451,7 +452,14 @@ const client = new Client(
       },
 
       // Enable task support for long-running operations
-      tasks: {}
+      tasks: {
+        list: {},      // Support tasks/list
+        cancel: {},    // Support tasks/cancel
+        requests: {    // Task-augmented request types you can receive
+          sampling: { createMessage: {} },
+          elicitation: { create: {} },
+        },
+      }
     }
   }
 );
@@ -571,6 +579,52 @@ const client = new Client(
   { name: 'my-client', version: '1.0.0' },
   { capabilities: { tasks: {} }, taskStore }
 );
+```
+
+For handling task-augmented requests when the client is the receiver (bidirectional tasks):
+
+```typescript
+import {
+  createReceiverTaskManager,
+  setupReceiverTaskHandlers,
+  getReceiverTaskCapabilities,
+  emitTaskStatusNotification,
+} from './capabilities/tasks-receiver.js';
+
+// Create task manager for receiver-side tasks
+const taskManager = createReceiverTaskManager({
+  ttl: 300000,  // 5 minutes
+  onLog: (msg) => console.log(msg),
+});
+
+// Set up request handlers for tasks/list, tasks/get, etc.
+setupReceiverTaskHandlers(client, taskManager);
+
+// Get capability declaration for client initialization
+const taskCapabilities = getReceiverTaskCapabilities({
+  sampling: true,      // Support task-augmented sampling requests
+  elicitation: true,   // Support task-augmented elicitation requests
+});
+
+// In your sampling handler, create receiver tasks:
+client.setRequestHandler(CreateMessageRequestSchema, async (request) => {
+  // Check if this is a task-augmented request
+  if (request.params.task) {
+    const record = taskManager.createTask({
+      ttl: request.params.task.ttl,
+      initialStatus: 'working',
+      statusMessage: 'Processing sampling request...',
+    });
+
+    // Process asynchronously, then complete:
+    // taskManager.completeTask(record.task.taskId, result);
+    // await emitTaskStatusNotification(client, record.task);
+
+    return { task: record.task };  // Return CreateTaskResult
+  }
+
+  // Normal non-task flow...
+});
 ```
 
 ### Use Case Examples

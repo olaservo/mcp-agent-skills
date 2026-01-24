@@ -26,6 +26,14 @@ class MCPClient {
           // Declare client capabilities here
           // roots: { listChanged: true },  // If you need to provide roots
           // sampling: {},                   // If you need sampling support
+          // tasks: {                        // If you need task support
+          //   list: {},                     // Support tasks/list
+          //   cancel: {},                   // Support tasks/cancel
+          //   requests: {                   // Task-augmented request types you can receive
+          //     sampling: { createMessage: {} },
+          //     elicitation: { create: {} },
+          //   },
+          // },
         },
       }
     );

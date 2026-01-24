@@ -65,6 +65,11 @@
       "localFile": "capabilities/tasks.ts",
       "category": "capabilities"
     },
+    "tasks-receiver": {
+      "description": "Receiver-side task support for handling task-augmented requests (bidirectional tasks)",
+      "localFile": "capabilities/tasks-receiver.ts",
+      "category": "capabilities"
+    },
     "persistent-task-store": {
       "description": "File-based task store with persistence and TTL cleanup",
       "localFile": "stores/persistent-task-store.ts",

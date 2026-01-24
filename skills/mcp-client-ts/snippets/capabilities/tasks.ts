@@ -39,7 +39,7 @@ import {
 import {
   type ResponseMessage,
   takeResult,
-} from '@modelcontextprotocol/sdk/experimental';
+} from '@modelcontextprotocol/sdk/experimental/tasks';
 
 // ============================================================================
 // TYPES
