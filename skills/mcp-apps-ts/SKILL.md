@@ -1,13 +1,32 @@
 ---
 name: mcp-apps-ts
-description: Build interactive HTML UIs for MCP servers using the MCP Apps extension (SEP-1865). Covers server-side tool registration with UI resources, client-side App lifecycle, and host integration via AppBridge. Use when creating visual interfaces for MCP tools.
+description: Develop MCP Apps hosts (AppBridge) and access comprehensive MCP Apps reference documentation. Covers host embedding, multi-server routing, sandbox security, and full API reference. Use when building chat applications that embed MCP App UIs, or when you need in-depth MCP Apps architecture/API knowledge without cloning ext-apps.
 ---
 
-# TypeScript MCP Apps Builder
+# MCP Apps Host Development & Reference
 
-Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865).
+Build applications that embed MCP App UIs using AppBridge, with comprehensive reference documentation.
 
 **This is an experimental extension.** MCP Apps enables servers to deliver interactive HTML UIs that run in sandboxed iframes, allowing rich visual interfaces while maintaining security.
+
+---
+
+## When to Use This Skill
+
+**Use this skill when:**
+- **Building a host application** that embeds MCP App UIs (chat app, IDE plugin, agent interface)
+- **Implementing AppBridge** for iframe communication, tool routing, and security
+- **Developing multi-server hosts** with tool aggregation and UI routing
+- **Learning MCP Apps architecture** without cloning the ext-apps repository
+- **Referencing the complete API** for App, AppBridge, and React hooks
+
+**For creating MCP App servers or UIs:** Use the official `create-mcp-app` skill first - it provides guided project scaffolding. This skill's server/app snippets are supplementary reference material.
+
+> Install official skills via: `/plugin marketplace add modelcontextprotocol/ext-apps` or `npx skills add modelcontextprotocol/ext-apps`
+
+---
+
+> **React Hosts:** For React-based host applications, consider [`@mcp-ui/client`](https://www.npmjs.com/package/@mcp-ui/client) which provides ready-made React components for rendering MCP Apps. See [mcpui.dev documentation](https://mcpui.dev/guide/mcp-apps#host-side-rendering-client-sdk). This skill focuses on lower-level AppBridge integration for custom hosts.
 
 > **Tip: Stay up to date!** MCP Apps is under active development. Before starting, check the [ext-apps repository](https://github.com/modelcontextprotocol/ext-apps) for:
 > - [Open Pull Requests](https://github.com/modelcontextprotocol/ext-apps/pulls) - upcoming changes
@@ -26,39 +45,47 @@ Build interactive HTML UIs for MCP tools using the MCP Apps extension (SEP-1865)
 
 ## Quick Start Decision Trees
 
-### What Role Are You Building?
+### Why Are You Here?
 
 ```
-Want a complete, runnable starter project?
-  -> Copy a SCAFFOLD (new!)
-      - scaffold-vanilla-server: Full server + vanilla JS UI
-        Copy the directory, run npm install && npm run dev
-        See snippets/scaffold/vanilla-server/README.md
+Building a HOST that embeds MCP App UIs?  [PRIMARY USE CASE]
+  -> Start with HOST snippets
+      - host-full-integration: Complete end-to-end flow (RECOMMENDED START)
+      - host-multi-server: Connect to multiple servers with UI routing
+      - sandbox-proxy: Required double-iframe security
+      - app-bridge-basic: Just the AppBridge setup
+      - app-bridge-handlers: Full handlers implementation
 
-Building an MCP server that provides tools with UIs?
-  -> Start with SERVER snippets
+Need MCP Apps REFERENCE documentation?
+  -> Browse reference files
+      - reference/mcp_apps_api_reference.md: Complete API docs (App, AppBridge, React hooks)
+      - reference/mcp_apps_architecture.md: Architecture, security, common pitfalls
+
+Learning how MCP Apps work internally?
+  -> Review snippets as educational examples
+      - Server snippets: How tools link to UIs
+      - App snippets: How UIs receive tool results and communicate with hosts
+      - Scaffold: Complete runnable example
+
+Creating an MCP App server or UI?
+  -> Consider official create-mcp-app skill first
+      Official skill provides guided scaffolding with framework selection.
+      Use snippets below as supplementary reference:
+
+      SERVER snippets (reference):
       - tool-with-ui: Register tool with associated HTML UI
       - tool-with-structured: Return structured content
       - resource-with-csp: Add Content Security Policy
-      - server-with-private-tools: Hide tools from model (NEW!)
+      - server-with-private-tools: Hide tools from model
 
-Building the HTML UI that displays to users?
-  -> Start with APP snippets
+      APP snippets (reference):
       - app-vanilla-basic: Simple App class setup (vanilla JS)
       - app-vanilla-full: Full lifecycle handlers (vanilla JS)
       - app-react-basic: React hooks integration
-      - app-react-with-styles: React with host styling (NEW!)
+      - app-react-with-styles: React with host styling
       - tool-calling: Call back to server tools
-      - app-with-display-mode: Request fullscreen/pip (NEW!)
-      - app-with-model-context: Update model context (NEW!)
-
-Building a host/client that embeds MCP app UIs?
-  -> Start with HOST snippets
-      - host-full-integration: Complete end-to-end flow (single server)
-      - host-multi-server: Connect to multiple servers with UI routing
-      - sandbox-proxy: Required for security
-      - app-bridge-basic: Just the AppBridge setup
-      - app-bridge-handlers: Full handlers setup
+      - app-with-display-mode: Request fullscreen/pip
+      - app-with-model-context: Update model context
 ```
 
 ### Which App Framework Should I Use?
@@ -101,31 +128,65 @@ MCP Apps uses a **two-part registration pattern**: Tool + UI Resource.
 
 ### 1.3 Browse Available Snippets
 
+**Host Snippets (Primary)**
+
 | Snippet | Description | Best For |
 |---------|-------------|----------|
-| `scaffold-vanilla-server` | **Complete starter project** | Quickest start - copy & run |
-| `tool-with-ui` | Tool with UI resource registration | Basic server setup |
+| `host-full-integration` | Complete host flow | **START HERE** for hosts |
+| `host-multi-server` | Multi-server host | Multiple server routing |
+| `app-bridge-basic` | Basic host embedding | Simple AppBridge setup |
+| `app-bridge-handlers` | Full AppBridge handlers | Custom handler logic |
+| `sandbox-proxy` | Sandbox proxy HTML | Required for security |
+
+**Server & App Snippets (Reference)**
+
+| Snippet | Description | Best For |
+|---------|-------------|----------|
+| `scaffold-vanilla-server` | Complete starter project | Learning - copy & run |
+| `tool-with-ui` | Tool with UI resource registration | Server pattern reference |
 | `tool-with-structured` | Tool returning structuredContent | Rich data responses |
 | `resource-with-csp` | UI resource with CSP metadata | Security-conscious apps |
-| `server-with-private-tools` | Tools hidden from model | UI-only actions (NEW!) |
-| `app-vanilla-basic` | Basic App class (vanilla JS) | Quick prototypes |
-| `app-vanilla-full` | Full lifecycle handlers | Production apps |
-| `app-react-basic` | React hooks integration | React projects |
-| `app-react-with-styles` | React with host styling | Themed React apps (NEW!) |
-| `tool-calling` | Call MCP tools from app | Interactive UIs |
-| `app-with-display-mode` | Request fullscreen/pip | Immersive UIs (NEW!) |
-| `app-with-model-context` | Update model context | State persistence (NEW!) |
-| `app-bridge-basic` | Basic host embedding | Simple integration |
-| `app-bridge-handlers` | Full AppBridge handlers | Custom hosts |
-| `host-full-integration` | Complete host flow | End-to-end hosting |
-| `host-multi-server` | Multi-server host | Multiple server routing |
-| `sandbox-proxy` | Sandbox proxy HTML | Host security |
+| `server-with-private-tools` | Tools hidden from model | UI-only actions |
+| `app-vanilla-basic` | Basic App class (vanilla JS) | App pattern reference |
+| `app-vanilla-full` | Full lifecycle handlers | Production app patterns |
+| `app-react-basic` | React hooks integration | React app reference |
+| `app-react-with-styles` | React with host styling | Themed React apps |
+| `tool-calling` | Call MCP tools from app | Interactive UI patterns |
+| `app-with-display-mode` | Request fullscreen/pip | Display mode patterns |
+| `app-with-model-context` | Update model context | State persistence patterns |
 
 ---
 
 ## Phase 2: Implement
 
-### 2.1 Server-Side: Register Tool with UI
+### 2.1 Host-Side: Embed MCP Apps (Primary)
+
+```bash
+npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk
+```
+
+**Option A: Custom host with AppBridge** (this skill's focus)
+
+Copy the `host-full-integration` snippet for the complete flow:
+1. Connect MCP client to server (see **mcp-client-ts** skill)
+2. Create AppBridge with the connected client
+3. Set up sandbox proxy iframe (use `sandbox-proxy` snippet)
+4. Register handlers before connecting
+5. Load UI resource and initialize app
+
+**Option B: React host with @mcp-ui/client**
+
+For React-based hosts, consider using the MCP-UI client library:
+```bash
+npm install @mcp-ui/client
+```
+See [mcpui.dev](https://mcpui.dev/guide/mcp-apps#host-side-rendering-client-sdk) for React component documentation.
+
+> **Critical:** The App initiates `ui/initialize`, the Host responds! If building without AppBridge SDK, you must handle the request/response correctly. See "Common Pitfalls" in the Architecture reference.
+
+> **See also:** For MCP client basics (connecting to servers, calling tools), refer to the **mcp-client-ts** skill.
+
+### 2.2 Server-Side: Register Tool with UI (Reference)
 
 ```bash
 npm install @modelcontextprotocol/sdk @modelcontextprotocol/ext-apps zod
@@ -143,7 +204,7 @@ _meta: { ui: { resourceUri: "ui://...", visibility: ["app"] } }
 
 > **See also:** For MCP server basics (transports, tool registration patterns), refer to the **mcp-server-ts** skill.
 
-### 2.2 App-Side: Build the UI
+### 2.3 App-Side: Build the UI (Reference)
 
 **Vanilla JS:**
 ```bash
@@ -163,7 +224,7 @@ Copy the appropriate app snippet and implement:
 5. Handle `onhostcontextchanged` for theme/style changes
 6. Call tools via `app.callServerTool()`
 
-### 2.3 Host Context & Styling
+### 2.4 Host Context & Styling
 
 Apps can access host context for theme, styles, and safe areas:
 
@@ -180,7 +241,7 @@ const context = app.getHostContext();
 
 **React:** Use `useHostStyleVariables()` and `useHostFonts()` hooks to automatically apply host styles.
 
-### 2.4 Display Modes
+### 2.5 Display Modes
 
 Apps can request different display modes:
 
@@ -191,7 +252,7 @@ if (context?.availableDisplayModes?.includes("fullscreen")) {
 }
 ```
 
-### 2.5 Model Context Updates
+### 2.6 Model Context Updates
 
 Apps can update the model's context with state information:
 
@@ -201,23 +262,6 @@ await app.updateModelContext({
   structuredContent: { items: 3, total: 150.00 }
 });
 ```
-
-### 2.6 Host-Side: Embed Apps (Optional)
-
-```bash
-npm install @modelcontextprotocol/ext-apps @modelcontextprotocol/sdk
-```
-
-Copy the `host-full-integration` snippet for the complete flow, or start with `app-bridge-basic` for just the AppBridge setup:
-1. Connect MCP client to server (see **mcp-client-ts** skill)
-2. Create AppBridge with the connected client
-3. Set up sandbox proxy iframe (use `sandbox-proxy` snippet)
-4. Register handlers before connecting
-5. Load UI resource and initialize app
-
-> **Critical:** The App initiates `ui/initialize`, the Host responds! If building without AppBridge SDK, you must handle the request/response correctly. See "Common Pitfalls" in the Architecture reference.
-
-> **See also:** For MCP client basics (connecting to servers, calling tools), refer to the **mcp-client-ts** skill.
 
 ---
 
@@ -287,7 +331,38 @@ server.oninitialized = ({ clientCapabilities }) => {
 
 ## Available Snippets Catalog
 
-### Scaffold (Complete Starter Projects)
+### Host (Embedding Apps) - Primary
+
+| Name | Description |
+|------|-------------|
+| `host-full-integration` | **START HERE** - Complete flow: MCP client + tool call + UI detection + AppBridge |
+| `host-multi-server` | Multi-server host with tool aggregation and UI routing |
+| `app-bridge-basic` | Basic AppBridge setup with PostMessageTransport |
+| `app-bridge-handlers` | Full handlers: `onmessage`, `onopenlink`, `onloggingmessage`, `onsizechange`, `onupdatemodelcontext` |
+| `sandbox-proxy` | Required sandbox proxy HTML for double-iframe security |
+
+### Server (Reference)
+
+| Name | Description |
+|------|-------------|
+| `tool-with-ui` | Register MCP tool with UI resource using `registerAppTool` and `registerAppResource` |
+| `tool-with-structured` | Tool returning `structuredContent` for typed responses |
+| `resource-with-csp` | UI resource with Content Security Policy metadata |
+| `server-with-private-tools` | Tools with `visibility: ["app"]` hidden from model |
+
+### App (Reference)
+
+| Name | Description |
+|------|-------------|
+| `app-vanilla-basic` | Basic App class with `ontoolresult` handler (vanilla JS) |
+| `app-vanilla-full` | Full lifecycle: all handlers including `ontoolcancelled`, `onhostcontextchanged` |
+| `app-react-basic` | React component with `useApp` hook |
+| `app-react-with-styles` | React with `useHostStyleVariables` and `useHostFonts` |
+| `tool-calling` | Examples of calling MCP tools from app UI |
+| `app-with-display-mode` | Request fullscreen/pip display modes |
+| `app-with-model-context` | Update model context with app state |
+
+### Scaffold (Learning)
 
 | Name | Description |
 |------|-------------|
@@ -306,37 +381,6 @@ npm run dev
 ```
 
 Server runs at `http://localhost:3102/mcp`. Test with the [basic-host example](https://github.com/modelcontextprotocol/ext-apps/tree/main/examples/basic-host).
-
-### Server (MCP Server with UI)
-
-| Name | Description |
-|------|-------------|
-| `tool-with-ui` | Register MCP tool with UI resource using `registerAppTool` and `registerAppResource` |
-| `tool-with-structured` | Tool returning `structuredContent` for typed responses |
-| `resource-with-csp` | UI resource with Content Security Policy metadata |
-| `server-with-private-tools` | Tools with `visibility: ["app"]` hidden from model |
-
-### App (HTML UI in iframe)
-
-| Name | Description |
-|------|-------------|
-| `app-vanilla-basic` | Basic App class with `ontoolresult` handler (vanilla JS) |
-| `app-vanilla-full` | Full lifecycle: all handlers including `ontoolcancelled`, `onhostcontextchanged` |
-| `app-react-basic` | React component with `useApp` hook |
-| `app-react-with-styles` | React with `useHostStyleVariables` and `useHostFonts` |
-| `tool-calling` | Examples of calling MCP tools from app UI |
-| `app-with-display-mode` | Request fullscreen/pip display modes |
-| `app-with-model-context` | Update model context with app state |
-
-### Host (Embedding Apps)
-
-| Name | Description |
-|------|-------------|
-| `app-bridge-basic` | Basic AppBridge setup with PostMessageTransport |
-| `app-bridge-handlers` | Full handlers: `onmessage`, `onopenlink`, `onloggingmessage`, `onsizechange` |
-| `host-full-integration` | Complete flow: MCP client + tool call + UI detection + AppBridge |
-| `host-multi-server` | Multi-server host with tool aggregation and UI routing |
-| `sandbox-proxy` | Sandbox proxy HTML for double-iframe security |
 
 ---
 
@@ -365,7 +409,10 @@ For deeper guidance, load these reference documents:
 ## External Resources
 
 - [MCP Apps SDK Repository](https://github.com/modelcontextprotocol/ext-apps)
-- [Quickstart Guide](https://modelcontextprotocol.github.io/ext-apps/api/documents/Quickstart.html)
+- [MCP Apps Overview](https://github.com/modelcontextprotocol/ext-apps/blob/main/docs/overview.md) - Architecture with diagrams
+- [Quickstart Guide](https://github.com/modelcontextprotocol/ext-apps/blob/main/docs/quickstart.md) - Type-checked step-by-step intro
+- [Patterns Guide](https://github.com/modelcontextprotocol/ext-apps/blob/main/docs/patterns.md) - Common implementation patterns
+- [Migration Guide](https://github.com/modelcontextprotocol/ext-apps/blob/main/docs/migrate_from_openai_apps.md) - Convert from OpenAI Apps SDK
 - [API Documentation](https://modelcontextprotocol.github.io/ext-apps/api/)
 - [SEP-1865 Specification](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/1865)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)

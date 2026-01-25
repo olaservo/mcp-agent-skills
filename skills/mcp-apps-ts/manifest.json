@@ -1,111 +1,111 @@
 {
   "snippets": {
-    "tool-with-ui": {
-      "description": "Register MCP tool with UI resource using registerAppTool and registerAppResource helpers",
-      "localFile": "snippets/server/tool-with-ui.ts",
-      "category": "server",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-server-vanillajs/server.ts"]
-    },
-    "tool-with-structured": {
-      "description": "Tool returning structuredContent alongside text for typed responses",
-      "localFile": "snippets/server/tool-with-structured.ts",
-      "category": "server"
-    },
-    "resource-with-csp": {
-      "description": "UI resource with Content Security Policy metadata in _meta.ui.csp",
-      "localFile": "snippets/server/resource-with-csp.ts",
-      "category": "server"
-    },
-    "server-with-private-tools": {
-      "description": "Tools with visibility: ['app'] hidden from model, only callable by UI",
-      "localFile": "snippets/server/server-with-private-tools.ts",
-      "category": "server",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/pdf-server/server.ts"]
-    },
-    "app-vanilla-basic": {
-      "description": "Basic App class initialization with ontoolresult handler (vanilla JavaScript)",
-      "localFile": "snippets/app/app-vanilla-basic.ts",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
-    },
-    "app-vanilla-full": {
-      "description": "Full lifecycle handlers including ontoolcancelled, onhostcontextchanged, plus messaging and host context",
-      "localFile": "snippets/app/app-vanilla-full.ts",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
-    },
-    "app-react-basic": {
-      "description": "React component with useApp hook including all handlers and host context",
-      "localFile": "snippets/app/app-react-basic.tsx",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-server-react/src/mcp-app.tsx"]
-    },
-    "app-react-with-styles": {
-      "description": "React app with useHostStyleVariables and useHostFonts for host theme integration",
-      "localFile": "snippets/app/app-react-with-styles.tsx",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["src/react/useHostStyles.ts"]
-    },
-    "tool-calling": {
-      "description": "Examples of calling MCP tools from within the app UI using callServerTool",
-      "localFile": "snippets/app/tool-calling.ts",
-      "category": "app"
-    },
-    "app-with-display-mode": {
-      "description": "Request fullscreen or picture-in-picture display modes from the host",
-      "localFile": "snippets/app/app-with-display-mode.ts",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/shadertoy-server/src/mcp-app.ts"]
-    },
-    "app-with-model-context": {
-      "description": "Update host model context with app state using updateModelContext",
-      "localFile": "snippets/app/app-with-model-context.ts",
-      "category": "app",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/transcript-server/src/mcp-app.tsx"]
-    },
-    "app-bridge-basic": {
-      "description": "Basic AppBridge setup for embedding MCP app UIs with PostMessageTransport",
-      "localFile": "snippets/host/app-bridge-basic.ts",
-      "category": "host",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
-    },
-    "app-bridge-handlers": {
-      "description": "Full AppBridge handlers: onmessage, onopenlink, onloggingmessage, onsizechange",
-      "localFile": "snippets/host/app-bridge-handlers.ts",
-      "category": "host",
-      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
-      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
-    },
     "host-full-integration": {
-      "description": "Complete host flow: connect MCP client, call tool, detect UI, fetch resource, embed app",
+      "description": "[HOST] Complete end-to-end flow: MCP client connection, tool call, UI detection, resource fetch, AppBridge setup, and sandbox embedding",
       "localFile": "snippets/host/host-full-integration.ts",
       "category": "host",
       "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
       "remoteFiles": ["examples/basic-host/src/implementation.ts"]
     },
     "host-multi-server": {
-      "description": "Multi-server host with tool aggregation and UI routing across servers",
+      "description": "[HOST] Multi-server host with qualified tool names, tool aggregation, and UI routing across multiple MCP servers",
       "localFile": "snippets/host/host-multi-server.ts",
       "category": "host"
     },
+    "app-bridge-basic": {
+      "description": "[HOST] Basic AppBridge setup with PostMessageTransport for embedding MCP App UIs in sandboxed iframes",
+      "localFile": "snippets/host/app-bridge-basic.ts",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    },
+    "app-bridge-handlers": {
+      "description": "[HOST] Full AppBridge handler implementation: onmessage, onopenlink, onloggingmessage, onsizechange, onupdatemodelcontext",
+      "localFile": "snippets/host/app-bridge-handlers.ts",
+      "category": "host",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-host/src/implementation.ts"]
+    },
     "sandbox-proxy": {
-      "description": "Sandbox proxy HTML for double-iframe security model (serve from separate origin)",
+      "description": "[HOST] Required sandbox proxy HTML for double-iframe security model - serves from separate origin for isolation",
       "localFile": "snippets/host/sandbox-proxy.html",
       "category": "host",
       "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
       "remoteFiles": ["examples/basic-host/sandbox.html", "examples/basic-host/src/sandbox.ts"]
     },
+    "tool-with-ui": {
+      "description": "[Reference] Server-side tool + UI resource registration pattern using registerAppTool and registerAppResource",
+      "localFile": "snippets/server/tool-with-ui.ts",
+      "category": "server",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/server.ts"]
+    },
+    "tool-with-structured": {
+      "description": "[Reference] Tool returning structuredContent alongside text for typed responses",
+      "localFile": "snippets/server/tool-with-structured.ts",
+      "category": "server"
+    },
+    "resource-with-csp": {
+      "description": "[Reference] UI resource with Content Security Policy metadata in _meta.ui.csp",
+      "localFile": "snippets/server/resource-with-csp.ts",
+      "category": "server"
+    },
+    "server-with-private-tools": {
+      "description": "[Reference] Tools with visibility: ['app'] hidden from model, only callable by UI",
+      "localFile": "snippets/server/server-with-private-tools.ts",
+      "category": "server",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/pdf-server/server.ts"]
+    },
+    "app-vanilla-basic": {
+      "description": "[Reference] Basic App class initialization with ontoolresult handler (vanilla JavaScript)",
+      "localFile": "snippets/app/app-vanilla-basic.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
+    },
+    "app-vanilla-full": {
+      "description": "[Reference] Full App lifecycle handlers: ontoolresult, ontoolcancelled, onhostcontextchanged, plus messaging",
+      "localFile": "snippets/app/app-vanilla-full.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-vanillajs/src/mcp-app.ts"]
+    },
+    "app-react-basic": {
+      "description": "[Reference] React component with useApp hook including all handlers and host context",
+      "localFile": "snippets/app/app-react-basic.tsx",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/basic-server-react/src/mcp-app.tsx"]
+    },
+    "app-react-with-styles": {
+      "description": "[Reference] React app with useHostStyleVariables and useHostFonts for host theme integration",
+      "localFile": "snippets/app/app-react-with-styles.tsx",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["src/react/useHostStyles.ts"]
+    },
+    "tool-calling": {
+      "description": "[Reference] Examples of calling MCP tools from within the app UI using callServerTool",
+      "localFile": "snippets/app/tool-calling.ts",
+      "category": "app"
+    },
+    "app-with-display-mode": {
+      "description": "[Reference] Request fullscreen or picture-in-picture display modes from the host",
+      "localFile": "snippets/app/app-with-display-mode.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/shadertoy-server/src/mcp-app.ts"]
+    },
+    "app-with-model-context": {
+      "description": "[Reference] Update host model context with app state using updateModelContext",
+      "localFile": "snippets/app/app-with-model-context.ts",
+      "category": "app",
+      "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",
+      "remoteFiles": ["examples/transcript-server/src/mcp-app.tsx"]
+    },
     "scaffold-vanilla-server": {
-      "description": "Complete vanilla JS MCP App server - copy entire directory and run with npm install && npm run dev",
+      "description": "[Learning] Complete vanilla JS MCP App server - copy entire directory and run with npm install && npm run dev",
       "localFile": "snippets/scaffold/vanilla-server",
       "category": "scaffold",
       "remoteBaseUrl": "https://github.com/modelcontextprotocol/ext-apps/blob/main",

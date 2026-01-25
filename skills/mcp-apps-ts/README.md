@@ -1,14 +1,25 @@
 # mcp-apps-ts
 
-Agent skill for building interactive HTML UIs for MCP servers using the MCP Apps extension (SEP-1865).
+Agent skill for developing MCP Apps hosts (AppBridge) and accessing comprehensive MCP Apps reference documentation.
 
 ## Overview
 
-This skill provides guidance, code snippets, and reference documentation for:
+### Primary Use Cases
 
-- **Server developers**: Register tools with UI resources
-- **App developers**: Build HTML UIs that run in sandboxed iframes
-- **Host developers**: Embed MCP Apps in chat applications
+1. **Host Development**: Build applications that embed MCP App UIs
+   - AppBridge integration for iframe communication
+   - Multi-server routing and tool aggregation
+   - Sandbox security implementation
+
+2. **Reference Documentation**: Access complete MCP Apps API without cloning ext-apps
+   - Full API reference (App, AppBridge, React hooks)
+   - Architecture deep-dive with common pitfalls
+   - Protocol flow and security model
+
+### Secondary Use Cases (Reference)
+
+- **Server snippets**: Learn how tools link to UIs (use official `create-mcp-app` skill for scaffolding)
+- **App snippets**: Understand UI lifecycle (use official `create-mcp-app` skill for scaffolding)
 
 ## Files
 
@@ -35,6 +46,25 @@ This skill tracks the [ext-apps repository](https://github.com/modelcontextproto
 ---
 
 ## Changelog
+
+### 2026-01-25 - Repositioned for host development focus
+
+**Reduced trigger overlap with official ext-apps skills:**
+- Updated skill description to emphasize host development and reference documentation
+- Restructured SKILL.md to lead with host snippets and AppBridge guidance
+- Added "When to Use This Skill" section with clear positioning
+- Added `@mcp-ui/client` as React alternative for hosts
+- Reordered snippets catalog: Host (Primary) → Server/App (Reference) → Scaffold (Learning)
+- Updated snippet descriptions in manifest.json with [HOST], [Reference], [Learning] prefixes
+
+**Why:** Official `create-mcp-app` skill now covers server/app development well. This skill's unique value is host development (AppBridge documentation) and comprehensive self-contained reference.
+
+### 2026-01-24 - Official skills acknowledgment
+
+- Updated SDK version in scaffold: `^0.3.1` → `^0.4.1`
+- Added notice about official ext-apps Agent Skills (`create-mcp-app`, `migrate-oai-app`)
+- Added cross-references to new ext-apps documentation (overview, quickstart, patterns, migration)
+- Repositioned as complementary self-contained alternative for learning and agents without plugin access
 
 ### 2026-01-21 - Updated for ext-apps post-v0.4.1 changes
 
