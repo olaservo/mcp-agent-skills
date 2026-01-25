@@ -4,6 +4,8 @@ MCP Apps (SEP-1865) is an experimental extension to the Model Context Protocol t
 
 > **Active Development:** This SDK is under rapid development. Before starting, check the [ext-apps repository](https://github.com/modelcontextprotocol/ext-apps) for recent changes. See the [Open PRs & Issues](#open-prs--issues-to-watch) section below.
 
+> **Official Skills Available:** The ext-apps repository now includes official Agent Skills (`create-mcp-app`, `migrate-oai-app`) with the latest guidance. Install via `/plugin marketplace add modelcontextprotocol/ext-apps`. This skill provides complementary self-contained reference docs.
+
 ## Core Pattern: Tool + UI Resource
 
 MCP Apps uses a **two-part registration** pattern:
