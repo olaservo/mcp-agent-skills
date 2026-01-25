@@ -60,6 +60,11 @@
       "localFile": "features/annotations.ts",
       "category": "features"
     },
+    "tool-annotations": {
+      "description": "Interpret tool behavior hints (readOnly, destructive, idempotent) for UI warnings",
+      "localFile": "features/tool-annotations.ts",
+      "category": "features"
+    },
     "tasks": {
       "description": "Task support for long-running tool operations with progress streaming",
       "localFile": "capabilities/tasks.ts",

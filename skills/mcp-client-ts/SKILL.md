@@ -267,6 +267,7 @@ node dist/index.js @modelcontextprotocol/server-everything "add 5 and 3"
 | `logging` | Receive server log messages with level filtering |
 | `completions` | Argument autocomplete for prompts and resources with interactive picker |
 | `annotations` | Filter, sort, and display content with audience, priority, and timestamp annotations |
+| `tool-annotations` | Interpret tool behavior hints for UI warnings and confirmations |
 
 ### Capabilities
 
