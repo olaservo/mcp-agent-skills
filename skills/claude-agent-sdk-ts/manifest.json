@@ -22,6 +22,11 @@
       "localFile": "snippets/agent-v1/query-with-queue.ts",
       "category": "agent-v1"
     },
+    "v1-query-resume": {
+      "description": "Maintain conversation memory with session resume in V1 query()",
+      "localFile": "snippets/agent-v1/query-with-resume.ts",
+      "category": "agent-v1"
+    },
     "v2-basic-session": {
       "description": "Create session with unstable_v2_createSession, send() and stream()",
       "localFile": "snippets/agent-v2/basic-session.ts",
