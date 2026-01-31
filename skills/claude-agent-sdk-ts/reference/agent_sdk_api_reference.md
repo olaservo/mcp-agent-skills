@@ -68,6 +68,9 @@ interface QueryOptions {
   // MCP servers
   mcpServers?: Record<string, McpServerConfig>;
 
+  // Session management (for conversation memory)
+  resume?: string;                // Resume a previous session by ID
+
   // Beta features
   betas?: string[];
 }
@@ -128,6 +131,8 @@ The V2 API provides session management for multi-turn conversations and persiste
 
 > **Note:** V2 APIs are prefixed with `unstable_v2_` and may change between SDK versions.
 
+> **V2 Limitations:** The V2 session API (`SDKSessionOptions`) only supports `model` and execution options (`pathToClaudeCodeExecutable`, `executable`, `executableArgs`, `env`). It does NOT support `cwd`, `settingSources`, `systemPrompt`, `appendSystemPrompt`, `allowedTools`, `mcpServers`, or `hooks`. For full configuration with conversation memory, use V1 `query()` with the `resume` option instead.
+
 ### Imports
 
 ```typescript
@@ -147,7 +152,11 @@ function unstable_v2_createSession(options: SessionOptions): Session;
 
 interface SessionOptions {
   model: 'opus' | 'sonnet' | 'haiku';
-  // Additional options similar to QueryOptions
+  // Limited options - see V2 Limitations note above
+  pathToClaudeCodeExecutable?: string;
+  executable?: 'node' | 'bun';
+  executableArgs?: string[];
+  env?: Record<string, string | undefined>;
 }
 
 interface Session {
