@@ -44,8 +44,9 @@ The SDK also supports cloud provider APIs. Set environment variables:
 **Amazon Bedrock:**
 ```bash
 export CLAUDE_CODE_USE_BEDROCK=1
-export AWS_REGION=us-east-1
-# Uses your AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, or IAM role)
+export AWS_REGION=us-west-2
+export AWS_PROFILE=your-profile  # Optional: specify named credentials profile
+# Or uses default AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, or IAM role)
 ```
 
 **Google Vertex AI:**
